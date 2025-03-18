@@ -141,6 +141,8 @@ class EventManager
 
         $modx->removeCollection(Event::class, [
             'sended' => true,
+        ]);
+        $modx->removeCollection(Event::class, [
             'rejected' => true,
         ]);
     }
