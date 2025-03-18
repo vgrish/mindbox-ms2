@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<model package="MindBoxMS2" baseClass="xPDOObject" platform="mysql" defaultEngine="InnoDB"
+       phpdoc-package="MindBoxMS2" version="1.1">
+
+
+    <object class="MindBoxMS2Event" table="mindbox_ms2_events" extends="xPDOObject">
+        <field key="id" dbtype="bigint" precision="20" phptype="integer" null="false" attributes="unsigned"
+               default="" index="pk"/>
+        <field key="operation" dbtype="varchar" precision="191" phptype="string" null="false" default=""/>
+        <field key="is_async_operation" dbtype="tinyint" precision="1" phptype="boolean" attributes="unsigned" null="false"
+               default="0"/>
+        <field key="context_key" dbtype="varchar" precision="100" phptype="string" null="true" default="web" />
+
+        <field key="client_uuid" dbtype="varchar" precision="100" phptype="string" null="false" default=""/>
+        <field key="client_ip" dbtype="varchar" precision="100" phptype="string" null="false" default=""/>
+
+        <field key="sended" dbtype="tinyint" precision="1" phptype="boolean" attributes="unsigned" null="false"
+               default="0"/>
+        <field key="rejected" dbtype="tinyint" precision="1" phptype="boolean" attributes="unsigned" null="false"
+               default="0"/>
+
+        <field key="created_at" dbtype="int" precision="20" phptype="timestamp" null="true" />
+        <field key="updated_at" dbtype="int" precision="20" phptype="timestamp" null="true" />
+        <field key="sended_at" dbtype="int" precision="20" phptype="timestamp" null="true" />
+
+        <field key="data" dbtype="text" phptype="json" null="true" />
+        <field key="error" dbtype="text" phptype="string" null="true"/>
+
+        <index alias="PRIMARY" name="PRIMARY" primary="true" unique="true" type="BTREE">
+            <column key="id" length="" collation="A" null="false"/>
+        </index>
+        <index alias="operation" name="operation" primary="false" unique="false" type="BTREE">
+            <column key="operation" length="" collation="A" null="false"/>
+        </index>
+        <index alias="context_key" name="context_key" primary="false" unique="false" type="BTREE">
+            <column key="context_key" length="" collation="A" null="false"/>
+        </index>
+
+        <index alias="sended" name="sended" primary="false" unique="false" type="BTREE">
+            <column key="sended" length="" collation="A" null="false"/>
+        </index>
+        <index alias="rejected" name="rejected" primary="false" unique="false" type="BTREE">
+            <column key="rejected" length="" collation="A" null="false"/>
+        </index>
+
+    </object>
+
+
+</model>

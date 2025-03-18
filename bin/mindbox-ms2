@@ -1,0 +1,9 @@
+#!/usr/bin/env php8.2
+<?php
+
+declare(strict_types=1);
+
+/** @var modX $modx */
+require dirname(__DIR__) . '/core/bootstrap.php';
+
+(new Vgrish\MindBox\MS2\Console\Console($modx))->run();

@@ -1,0 +1,12 @@
+.idea
+/vendor/
+/.php-cs-fixer.cache
+/.php-cs-fixer.php
+composer.phar
+composer.lock
+/tmp/
+/assets/node_modules/
+/assets/.prettierrc.json
+/assets/package.json
+/assets/package-lock.json
+/assets/dist/
