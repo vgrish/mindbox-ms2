@@ -52,12 +52,10 @@ class SetCart extends Worker
 
                 $ctx = (string) $this->modx?->context?->get('key');
 
-                if ($this->modx->user->isAuthenticated($ctx)) {
+                if ($this->modx->user->isAuthenticated($ctx) && ($profile = $this->modx->user->getOne('Profile'))) {
                     $data = \array_merge($data, [
                         'customer' => [
-                            'ids' => [
-                                'websiteID' => $this->modx->user->get('id'),
-                            ],
+                            'email' => $profile->get('email'),
                         ],
                     ]);
                 }

@@ -11,7 +11,7 @@ declare(strict_types=1);
 namespace Vgrish\MindBox\MS2\Dto\Data\Nomenclature;
 
 use Vgrish\MindBox\MS2\Dto\Entities\CartProductListDto;
-use Vgrish\MindBox\MS2\Dto\Entities\CustomerDto;
+use Vgrish\MindBox\MS2\Dto\Entities\CustomerCartDto;
 
 class SetCartDataDto
 {
@@ -19,5 +19,7 @@ class SetCartDataDto
      * @var list<CartProductListDto> ```<Продукты корзины>```
      */
     public array $productList;
-    public CustomerDto $customer;
+
+    #[\Vgrish\MindBox\MS2\Dto\Casters\NonEmptyObjectOrNullCaster()]
+    public CustomerCartDto $customer;
 }
