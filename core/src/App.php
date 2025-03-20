@@ -25,7 +25,7 @@ class App
     public const AUTHOR = 'vgrish';
     public const NAME = 'MindBoxMS2';
     public const NAMESPACE = 'mindbox-ms2';
-    public const VERSION = '1.0.0';
+    public const VERSION = '1.0.1';
     public const MINDBOX_DEVICE_UUID = 'mindboxDeviceUUID';
     public \modX $modx;
     protected ?ApiClient $apiClient = null;
