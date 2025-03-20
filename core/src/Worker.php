@@ -61,7 +61,7 @@ abstract class Worker implements WorkerInterface
         self::$isDevelopmentMode = (bool) $this->modx->getOption(App::NAMESPACE . '.development_mode', null);
     }
 
-    public function run(): WorkerResult
+    public function run(bool $debug = false): WorkerResult
     {
         $result = $this->process();
 
@@ -83,7 +83,12 @@ abstract class Worker implements WorkerInterface
             $data = $this->formatData(EventDto::class, $data, false);
             $event = new Event($this->modx);
             $event->fromArray($data, '', true, true);
-            $event->save();
+
+            if (!$debug) {
+                $event->save();
+            } else {
+                $this->log($event->toArray());
+            }
         }
 
         return $result;

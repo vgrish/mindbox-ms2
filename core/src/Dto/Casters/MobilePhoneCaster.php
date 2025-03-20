@@ -31,7 +31,7 @@ class MobilePhoneCaster
         }
 
         if (\mb_strlen($value) < 11) {
-            $value = '';
+            return null;
         }
 
         return \trim((string) $value);

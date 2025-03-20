@@ -67,6 +67,7 @@ trait GetOrderDataTrait
                 ],
                 'mobilePhone' => $profile->get('mobilephone'),
                 'phone' => $profile->get('phone'),
+                'phone2' => $address->get('phone'),
             ],
             'order' => [
                 'ids' => [

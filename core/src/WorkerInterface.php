@@ -12,7 +12,7 @@ namespace Vgrish\MindBox\MS2;
 
 interface WorkerInterface
 {
-    public function run(): WorkerResult;
+    public function run(bool $debug = false): WorkerResult;
 
     public function process(): WorkerResult;
 

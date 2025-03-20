@@ -54,11 +54,13 @@ if ($user) {
         ]);
 
         if ($response = $order->submit()) {
-            $response = \json_decode($response, true);
+            $response = \is_array($response) ? $response : \json_decode($response, true);
         }
 
         if ($response['success'] ?? false) {
             $msOrder = $modx->getObject(\msOrder::class, (int) $response['data']['msorder']);
+        } else {
+            $modx->log(\modX::LOG_LEVEL_ERROR, \var_export($response, true));
         }
     }
 

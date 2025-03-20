@@ -59,9 +59,18 @@ class CustomerDto
          */
         #[\Vgrish\MindBox\MS2\Dto\Casters\HiddenValue()]
         public ?string $phone,
+        /**
+         * @var null|string
+         */
+        #[\Vgrish\MindBox\MS2\Dto\Casters\HiddenValue()]
+        public ?string $phone2,
     ) {
         if (empty($this->mobilePhone) && !empty($this->phone)) {
             $this->mobilePhone = $this->phone;
+        }
+
+        if (empty($this->mobilePhone) && !empty($this->phone2)) {
+            $this->mobilePhone = $this->phone2;
         }
 
         if (!empty($this->lastName) || !empty($this->firstName) || !empty($this->middleName)) {

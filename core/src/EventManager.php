@@ -46,7 +46,6 @@ class EventManager
                     if ($stmt->rowCount() > 0) {
                         while ($id = $stmt->fetch(\PDO::FETCH_COLUMN)) {
                             if ($event = $modx->getObject(Event::class, $id, false)) {
-
                                 if (!$event->get('is_async_operation')) {
                                     \usleep(500000);
                                 }
