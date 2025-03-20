@@ -13,9 +13,11 @@ namespace Vgrish\MindBox\MS2\Workers\Nomenclature;
 use Vgrish\MindBox\MS2\Dto\Data\Nomenclature\SetCartDataDto;
 use Vgrish\MindBox\MS2\Worker;
 use Vgrish\MindBox\MS2\WorkerResult;
+use Vgrish\MindBox\MS2\Workers\Traits\GetProductListDataTrait;
 
 class SetCart extends Worker
 {
+    use GetProductListDataTrait;
     protected static string $operation = 'Website.SetCart';
     protected static bool $isAsyncOperation = false;
     protected static bool $isClientRequired = true;
@@ -47,7 +49,7 @@ class SetCart extends Worker
 
             if (!empty($productList)) {
                 $data = [
-                    'productList' => $productList,
+                    'productList' => $this->getProductListData($productList),
                 ];
 
                 $ctx = (string) $this->modx?->context?->get('key');
