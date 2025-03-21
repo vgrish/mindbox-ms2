@@ -26,11 +26,11 @@ class App
     public const NAME = 'MindBoxMS2';
     public const NAMESPACE = 'mindbox-ms2';
     public const VERSION = '1.0.1';
+    public const WORKERS = 'workers';
+    public const WEBHOOKS = 'webhooks';
     public const MINDBOX_DEVICE_UUID = 'mindboxDeviceUUID';
     public \modX $modx;
     protected ?ApiClient $apiClient = null;
-    protected static $eventsWorkers;
-    protected static $valinorMapper;
 
     public function __construct(\modX $modx, $config = [])
     {
@@ -80,8 +80,10 @@ class App
         return $option;
     }
 
-    public function getApiClient(array $credentials, RequestSenderFactoryInterface $requestSenderFactory = new GuzzleSenderFactory()): ApiClient
-    {
+    public function getApiClient(
+        array $credentials,
+        RequestSenderFactoryInterface $requestSenderFactory = new GuzzleSenderFactory(),
+    ): ApiClient {
         if (null === $this->apiClient) {
             $this->apiClient = new ApiClient($credentials, $requestSenderFactory->make());
         }
@@ -89,9 +91,11 @@ class App
         return $this->apiClient;
     }
 
-    public function getValinorMapperBuilder(): MapperBuilder
+    public function getValinorMapperBuilder(): ?MapperBuilder
     {
-        if (null === self::$valinorMapper) {
+        static $mapper = null;
+
+        if (null === $mapper) {
             $cache = new FileSystemCache(MODX_CORE_PATH . 'cache/valinor');
 
             if ((bool) $this->modx->getOption(self::NAMESPACE . '.development_mode', null)) {
@@ -114,11 +118,9 @@ class App
                         static fn (mixed $value) => null !== $value,
                     ),
                 );
-
-            self::$valinorMapper = $mapper;
         }
 
-        return self::$valinorMapper;
+        return $mapper;
     }
 
     public function getMappper()
@@ -131,18 +133,34 @@ class App
         return $this->getValinorMapperBuilder()?->normalizer(Format::array());
     }
 
-    public static function getEventsWorkersFromConfigFile(): array
+    public static function getConfigFromFile(): array
     {
-        if (null === self::$eventsWorkers) {
-            $file = MODX_CORE_PATH . 'components/' . self::NAMESPACE . '/config/events.php';
+        static $config = [];
+
+        if (empty($config)) {
+            $file = MODX_CORE_PATH . 'components/' . self::NAMESPACE . '/config.php';
 
             if (\file_exists($file) && \is_writable(\dirname($file))) {
-                self::$eventsWorkers = include $file;
+                $config = include $file;
             } else {
-                self::$eventsWorkers = [];
+                $config = [];
             }
         }
 
-        return (array) self::$eventsWorkers;
+        return (array) $config;
+    }
+
+    public static function getWorkersFromConfig(): array
+    {
+        $workers = static::getConfigFromFile()[static::WORKERS] ?? [];
+
+        return (array) $workers;
+    }
+
+    public static function getWebHooksFromConfig(): array
+    {
+        $webhooks = static::getConfigFromFile()[static::WEBHOOKS] ?? [];
+
+        return (array) $webhooks;
     }
 }

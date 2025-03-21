@@ -11,8 +11,8 @@ declare(strict_types=1);
 namespace Vgrish\MindBox\MS2;
 
 use CuyZ\Valinor\Mapper\Source\Source;
+use Vgrish\MindBox\MS2\Constant\HttpMethod;
 use Vgrish\MindBox\MS2\Dto\ApiResponseDto;
-use Vgrish\MindBox\MS2\Enums\HttpMethod;
 use Vgrish\MindBox\MS2\Http\Payload;
 use Vgrish\MindBox\MS2\Models\Event;
 

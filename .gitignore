@@ -10,3 +10,4 @@ composer.lock
 /assets/package.json
 /assets/package-lock.json
 /assets/dist/
+/core/config.php

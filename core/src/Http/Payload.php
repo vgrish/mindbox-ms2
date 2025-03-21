@@ -10,7 +10,7 @@ declare(strict_types=1);
 
 namespace Vgrish\MindBox\MS2\Http;
 
-use Vgrish\MindBox\MS2\Enums\HttpMethod;
+use Vgrish\MindBox\MS2\Constant\HttpMethod;
 
 class Payload
 {

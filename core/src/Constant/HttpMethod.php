@@ -8,7 +8,7 @@ declare(strict_types=1);
  * @see https://github.com/vgrish/mindbox-ms2
  */
 
-namespace Vgrish\MindBox\MS2\Enums;
+namespace Vgrish\MindBox\MS2\Constant;
 
 enum HttpMethod: string
 {

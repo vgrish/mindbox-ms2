@@ -20,6 +20,10 @@ class WorkerManager
             }
 
             if (\is_array($workers)) {
+                $workers = \array_filter($workers, static function ($class) {
+                    return \is_string($class) && !empty($class);
+                });
+
                 foreach ($workers as $class) {
                     try {
                         /** @var WorkerInterface $worker */

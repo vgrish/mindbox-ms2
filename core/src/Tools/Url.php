@@ -19,7 +19,6 @@ class Url
     public static function make(Payload $payload): string
     {
         return self::makeFromPathAndParams($payload->path, $payload->params);
-        /* $payload->async, */
     }
 
     public static function makeFromPathAndParams(array $path, array $params = []): string

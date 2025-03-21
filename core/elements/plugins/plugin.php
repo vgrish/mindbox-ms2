@@ -17,11 +17,4 @@ if (!$app = $modx->services[App::NAME] ?? null) {
     return;
 }
 
-$eventsWorkers = App::getEventsWorkersFromConfigFile();
-$workers = $eventsWorkers[$modx->event->name] ?? [];
-
-if (empty($workers)) {
-    return;
-}
-
-WorkerManager::load($app, $workers);
+WorkerManager::load($app, App::getWorkersFromConfig()[$modx->event->name] ?? []);

@@ -87,24 +87,6 @@ class InstallCommand extends Command
             $output->writeln(\sprintf('<info>Created system setting `%s`</info>', $key));
         }
 
-        //        $key = App::NAMESPACE . '.api_endpoint';
-        //
-        //        if (!$modx->getObject(\modSystemSetting::class, $key)) {
-        //            $setting = new \modSystemSetting($modx);
-        //            $setting->fromArray(
-        //                [
-        //                    'key' => $key,
-        //                    'namespace' => App::NAME,
-        //                    'xtype' => 'textfield',
-        //                    'value' => 'https://api.mindbox.ru/v3/operations',
-        //                ],
-        //                false,
-        //                true,
-        //            );
-        //            $setting->save();
-        //            $output->writeln(\sprintf('<info>Created system setting `%s`</info>', $key));
-        //        }
-
         $key = App::NAMESPACE . '.api_endpoint_id';
 
         if (!$modx->getObject(\modSystemSetting::class, $key)) {
@@ -124,6 +106,24 @@ class InstallCommand extends Command
         }
 
         $key = App::NAMESPACE . '.api_secret_key';
+
+        if (!$modx->getObject(\modSystemSetting::class, $key)) {
+            $setting = new \modSystemSetting($modx);
+            $setting->fromArray(
+                [
+                    'key' => $key,
+                    'namespace' => App::NAME,
+                    'xtype' => 'textfield',
+                    'value' => '',
+                ],
+                false,
+                true,
+            );
+            $setting->save();
+            $output->writeln(\sprintf('<info>Created system setting `%s`</info>', $key));
+        }
+
+        $key = App::NAMESPACE . '.webhook_secret_key';
 
         if (!$modx->getObject(\modSystemSetting::class, $key)) {
             $setting = new \modSystemSetting($modx);
@@ -172,11 +172,11 @@ class InstallCommand extends Command
             }
         }
 
-        $eventsConfig = $corePath . '/config/events.php';
+        $config = $corePath . '/config.php';
 
-        if (!\file_exists($eventsConfig) && \is_writable(\dirname($eventsConfig))) {
-            \copy($eventsConfig . '.inc', $eventsConfig);
-            \chmod($eventsConfig, 0o644);
+        if (!\file_exists($config)) {
+            \copy($config . '.inc', $config);
+            \chmod($config, 0o644);
         }
 
         //        foreach (
