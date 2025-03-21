@@ -21,14 +21,15 @@ composer remove vgrish/mindbox-ms2
 
 ### Настройки
 
-* `api_endpoint_id` - Идентификатор точки интеграции
-* `api_secret_key` - Секретный ключ
+* `api_endpoint_id` - Идентификатор точки интеграции api
+* `api_secret_key` - Секретный ключ api
+* `webhook_secret_key` - Секретный ключ webhook
 * `development_mode` - Режим разработки. Включает вывод данных в журнал MODx, а так же включает отслеживание изменений DTO сущностей в реальном времени.
 
 ## Конфиг
 Файл с указанием событий MODx и обработчиков. Расположен в папке пакета 
 ```
-core/components/mindbox-ms2/config/events.php
+core/components/mindbox-ms2/config.php
 ```
 Пример конфига
 
@@ -37,53 +38,63 @@ core/components/mindbox-ms2/config/events.php
 
 declare(strict_types=1);
 
+/**
+ * Copyright (c) 2024 Vgrish <vgrish@gmail.com>
+ * "vgrish/mindbox-ms2" package for MindBoxMS2
+ *
+ * @see https://github.com/vgrish/mindbox-ms2
+ */
 
+use Vgrish\MindBox\MS2\App;
 use Vgrish\MindBox\MS2\Workers;
 
-$events = [
-    'OnWebPagePrerender' => [
-        Workers\Nomenclature\ViewCategory::class,
-        Workers\Nomenclature\ViewProduct::class,
+return [
+    App::WORKERS => [
+        'OnWebPagePrerender' => [
+            Workers\Nomenclature\ViewCategory::class,
+            Workers\Nomenclature\ViewProduct::class,
+        ],
+        'OnWebLogin' => [
+            Workers\Customers\AuthorizeCustomer::class,
+        ],
+        'OnUserActivate' => [
+            Workers\Customers\RegisterCustomer::class,
+        ],
+        'OnUserFormSave' => [
+            Workers\Customers\EditCustomer::class,
+        ],
+        'msOnAddToCart' => [
+            Workers\Nomenclature\SetCart::class,
+        ],
+        'msOnChangeInCart' => [
+            Workers\Nomenclature\SetCart::class,
+            Workers\Nomenclature\ClearCart::class,
+        ],
+        'msOnRemoveFromCart' => [
+            Workers\Nomenclature\SetCart::class,
+            Workers\Nomenclature\ClearCart::class,
+        ],
+        'msOnEmptyCart' => [
+            Workers\Nomenclature\ClearCart::class,
+        ],
+        'msOnSaveOrder' => [
+            Workers\Orders\CreateAuthorizedOrder::class,
+            Workers\Orders\CreateUnauthorizedOrder::class,
+            Workers\Orders\UpdateOrder::class,
+        ],
+        'msOnChangeOrderStatus' => [
+            Workers\Orders\UpdateOrderStatus::class,
+        ],
+        'msFavoritesOnProcessFavorites' => [
+            Workers\Nomenclature\AddToWishList::class,
+            Workers\Nomenclature\RemoveFromWishList::class,
+            Workers\Nomenclature\ClearWishList::class,
+        ],
     ],
-    'OnWebLogin' => [
-        Workers\Customers\AuthorizeCustomer::class,
-    ],
-    'OnUserActivate' => [
-        Workers\Customers\RegisterCustomer::class,
-    ],
-    'OnUserFormSave' => [
-        Workers\Customers\EditCustomer::class,
-    ],
-    'msOnAddToCart' => [
-        Workers\Nomenclature\SetCart::class,
-    ],
-    'msOnChangeInCart' => [
-        Workers\Nomenclature\SetCart::class,
-        Workers\Nomenclature\ClearCart::class,
-    ],
-    'msOnRemoveFromCart' => [
-        Workers\Nomenclature\SetCart::class,
-        Workers\Nomenclature\ClearCart::class,
-    ],
-    'msOnEmptyCart' => [
-        Workers\Nomenclature\ClearCart::class,
-    ],
-    'msOnSaveOrder' => [
-        Workers\Orders\CreateAuthorizedOrder::class,
-        Workers\Orders\CreateUnauthorizedOrder::class,
-        Workers\Orders\UpdateOrder::class,
-    ],
-    'msOnChangeOrderStatus' => [
-        Workers\Orders\UpdateOrderStatus::class,
-    ],
-    'msFavoritesOnProcessFavorites' => [
-        Workers\Nomenclature\AddToWishList::class,
-        Workers\Nomenclature\RemoveFromWishList::class,
-        Workers\Nomenclature\ClearWishList::class,
-    ]
+
+    App::WEBHOOKS => [],
 ];
 
-return $events;
 ```
 
 ## Cron
