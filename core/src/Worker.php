@@ -166,17 +166,7 @@ abstract class Worker implements WorkerInterface
 
     protected function getDeviceUUID(): string
     {
-        $uuid = '';
-
-        if ($this->isClientRequired()) {
-            $uuid = (string) ($_COOKIE[App::MINDBOX_DEVICE_UUID] ?? '');
-
-            if (empty($uuid)) {
-                $uuid = Cookies::generateDeviceUUID(true);
-            }
-        }
-
-        return $uuid;
+        return $this->isClientRequired() ? Cookies::getDeviceUUID(true) : '';
     }
 
     protected function getClientIp(): string

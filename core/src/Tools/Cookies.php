@@ -10,10 +10,10 @@ declare(strict_types=1);
 
 namespace Vgrish\MindBox\MS2\Tools;
 
-use Vgrish\MindBox\MS2\App;
-
 class Cookies
 {
+    public const MINDBOX_DEVICE_UUID = 'mindboxDeviceUUID';
+
     public static function setCookie($name, $value, $expires = 0, $httpOnly = true, $sameSite = 'Strict'): void
     {
         $domain = (string) ($_SERVER['HTTP_HOST'] ?? '');
@@ -36,6 +36,17 @@ class Cookies
         );
     }
 
+    public static function getDeviceUUID(bool $required = false): string
+    {
+        $uuid = (string) ($_COOKIE[self::MINDBOX_DEVICE_UUID] ?? '');
+
+        if (empty($uuid) && $required) {
+            $uuid = self::generateDeviceUUID(true);
+        }
+
+        return $uuid;
+    }
+
     public static function generateDeviceUUID(bool $set = false): string
     {
         $uuid = \sprintf(
@@ -51,7 +62,7 @@ class Cookies
         );
 
         if ($set) {
-            self::setCookie(App::MINDBOX_DEVICE_UUID, $uuid);
+            self::setCookie(self::MINDBOX_DEVICE_UUID, $uuid);
         }
 
         return $uuid;

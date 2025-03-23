@@ -28,7 +28,6 @@ class App
     public const VERSION = '1.0.1';
     public const WORKERS = 'workers';
     public const WEBHOOKS = 'webhooks';
-    public const MINDBOX_DEVICE_UUID = 'mindboxDeviceUUID';
     public \modX $modx;
     protected ?ApiClient $apiClient = null;
 
