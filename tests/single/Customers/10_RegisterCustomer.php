@@ -19,6 +19,7 @@ if ($user = getUser()) {
     $app = new App($modx);
     $worker = new RegisterCustomer($app, [
         'user' => $user,
+        'mode' => modSystemEvent::MODE_NEW,
     ]);
 
     return $worker->run();

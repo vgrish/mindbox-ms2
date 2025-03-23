@@ -160,11 +160,15 @@ class InstallCommand extends Command
             $generator = $manager->getGenerator();
 
             if (!$generator->parseSchema($schemaFile, $corePath . '/src/Models/' . App::NAME . '/')) {
-                $output->writeln(\sprintf('<error>Model regeneration failed! Error parsing schema `%s`</error>', $schemaFile));
+                $output->writeln(
+                    \sprintf('<error>Model regeneration failed! Error parsing schema `%s`</error>', $schemaFile),
+                );
 
                 unset($manager);
             } else {
-                $output->writeln(\sprintf('<info>Regeneration of model files completed successfully `%s`</info>', $schemaFile));
+                $output->writeln(
+                    \sprintf('<info>Regeneration of model files completed successfully `%s`</info>', $schemaFile),
+                );
             }
 
             if (isset($manager)) {
@@ -222,11 +226,12 @@ class InstallCommand extends Command
 
         foreach (
             [
-                'OnWebPagePrerender',
-                'OnWebLogin',
-                'OnUserActivate',
-                'OnUserFormSave',
                 // '-----------------',
+                'OnUserSave',
+                'OnUserFormSave',
+                'OnWebLogin',
+                // '-----------------',
+                'OnWebPagePrerender',
                 'msOnAddToCart',
                 'msOnChangeInCart',
                 'msOnRemoveFromCart',
@@ -234,8 +239,6 @@ class InstallCommand extends Command
                 // '-----------------',
                 'msOnSaveOrder',
                 'msOnChangeOrderStatus',
-
-                // 'msOnUpdateOrder',
             ] as $eventName
         ) {
             if (!$modx->getObject(\modPluginEvent::class, [
@@ -255,7 +258,9 @@ class InstallCommand extends Command
                     true,
                 );
                 $event->save();
-                $output->writeln(\sprintf('<info>Added event `%s` to plugin `%s`</info>', $eventName, $plugin->get('name')));
+                $output->writeln(
+                    \sprintf('<info>Added event `%s` to plugin `%s`</info>', $eventName, $plugin->get('name')),
+                );
             }
         }
 
@@ -347,7 +352,9 @@ class InstallCommand extends Command
                 foreach ($indexes as $key => $index) {
                     if (!isset($map[$key])) {
                         if ($manager->removeIndex($class, $key)) {
-                            $output->writeln(\sprintf('<info>Removed index `%s` of the table `%s`</info>', $key, $class));
+                            $output->writeln(
+                                \sprintf('<info>Removed index `%s` of the table `%s`</info>', $key, $class),
+                            );
                         }
                     }
                 }
@@ -364,7 +371,9 @@ class InstallCommand extends Command
                     } else {
                         if ($index !== $indexes[$key]) {
                             if ($manager->removeIndex($class, $key) && $manager->addIndex($class, $key)) {
-                                $output->writeln(\sprintf('<info>Updated index `%s` of the table `%s`</info>', $key, $class));
+                                $output->writeln(
+                                    \sprintf('<info>Updated index `%s` of the table `%s`</info>', $key, $class),
+                                );
                             }
                         }
                     }

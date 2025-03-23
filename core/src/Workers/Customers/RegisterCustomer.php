@@ -24,6 +24,11 @@ class RegisterCustomer extends Worker
     {
         $params = $this->event->params;
         $user = $params['user'] ?? null;
+        $mode = $params['mode'] ?? null;
+
+        if (\modSystemEvent::MODE_NEW !== $mode) {
+            return $this->error();
+        }
 
         if (\is_object($user) && \is_a($user, \modUser::class)) {
             if (!$profile = $user->getOne('Profile')) {

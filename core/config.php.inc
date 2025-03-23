@@ -5,11 +5,11 @@ declare(strict_types=1);
 /**
  * Copyright (c) 2024 Vgrish <vgrish@gmail.com>
  * "vgrish/mindbox-ms2" package for MindBoxMS2
- *
  * @see https://github.com/vgrish/mindbox-ms2
  */
 
 use Vgrish\MindBox\MS2\App;
+use Vgrish\MindBox\MS2\Webhooks;
 use Vgrish\MindBox\MS2\Workers;
 
 return [
@@ -21,7 +21,7 @@ return [
         'OnWebLogin' => [
             Workers\Customers\AuthorizeCustomer::class,
         ],
-        'OnUserActivate' => [
+        'OnUserSave' => [
             Workers\Customers\RegisterCustomer::class,
         ],
         'OnUserFormSave' => [
@@ -56,5 +56,7 @@ return [
         ],
     ],
 
-    App::WEBHOOKS => [],
+    App::WEBHOOKS => [
+        'GetPromoCodeOnFirstOrder' => Webhooks\PromoCodes\GetPromoCodeOnFirstOrder::class,
+    ],
 ];
