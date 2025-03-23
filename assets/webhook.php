@@ -72,9 +72,11 @@ $webhooks = App::getWebHooksFromConfig()[$operation] ?? [];
 
 try {
     $result = WebHookManager::load($app, $webhooks, $data);
+
     if (!$result->success) {
         \http_response_code(400);
     }
+
     echo \json_encode($result);
 } catch (Throwable $e) {
     \http_response_code(500);
