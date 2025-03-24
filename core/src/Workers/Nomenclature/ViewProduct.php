@@ -22,6 +22,10 @@ class ViewProduct extends Worker
 
     public function process(): WorkerResult
     {
+        if ($this->isClientBot()) {
+            return $this->error();
+        }
+
         $resource = $this->modx?->resource;
 
         if (\is_object($resource) && \is_a($resource, \msProduct::class)) {
