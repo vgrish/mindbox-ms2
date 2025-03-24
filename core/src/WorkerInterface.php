@@ -27,4 +27,6 @@ interface WorkerInterface
     public function isAsyncOperation(): bool;
 
     public function isClientRequired(): bool;
+
+    public function isClientBot(): bool;
 }

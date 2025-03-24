@@ -14,6 +14,7 @@ use CuyZ\Valinor\Mapper\Source\Source;
 use Vgrish\MindBox\MS2\Dto\EventDto;
 use Vgrish\MindBox\MS2\Models\Event;
 use Vgrish\MindBox\MS2\Tools\Cookies;
+use Vgrish\MindBox\MS2\Tools\Headers;
 
 abstract class Worker implements WorkerInterface
 {
@@ -24,6 +25,7 @@ abstract class Worker implements WorkerInterface
     protected static bool $isAsyncOperation;
     protected static bool $isClientRequired;
     protected static bool $isDevelopmentMode;
+    protected static string $botPatterns;
 
     public function __construct(
         protected App $app,
@@ -59,6 +61,7 @@ abstract class Worker implements WorkerInterface
         $this->event = $event;
 
         self::$isDevelopmentMode = (bool) $this->modx->getOption(App::NAMESPACE . '.development_mode', null);
+        self::$botPatterns = (string) $this->modx->getOption(App::NAMESPACE . '.bot_patterns', null);
     }
 
     public function run(bool $debug = false): WorkerResult
@@ -152,6 +155,15 @@ abstract class Worker implements WorkerInterface
     public function isClientRequired(): bool
     {
         return static::$isClientRequired;
+    }
+
+    public function isClientBot(): bool
+    {
+        if (empty(self::$botPatterns)) {
+            return false;
+        }
+
+        return Headers::validateUserAgentIsBot(self::$botPatterns);
     }
 
     protected function getContextKey(): string
