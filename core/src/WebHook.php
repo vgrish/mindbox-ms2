@@ -30,7 +30,7 @@ abstract class WebHook implements WebHookInterface
         static::$operation = (string) ($config['operation'] ?? '');
         static::$transactionId = (string) ($config['transactionId'] ?? '');
 
-        if (!isset(static::$operation)) {
+        if (empty(static::$operation)) {
             throw new \LogicException(\sprintf('%s must have a `%s`', static::class, '$operation'));
         }
 

@@ -51,22 +51,25 @@ if (!$app = $modx->services[App::NAME] ?? null) {
     $app = $modx->services[App::NAME] = new App($modx);
 }
 
-if (!Headers::validateWebHookAuthorizationHeader(
-    getallheaders(),
-    (string) $modx->getOption(App::NAMESPACE . '.webhook_secret_key', null),
-)) {
+if (!Headers::validateWebHookAuthorization((string) $modx->getOption(App::NAMESPACE . '.webhook_secret_key', null))) {
     \http_response_code(401);
 
     exit('Unauthorized');
 }
 
-$data = $_REQUEST;
-
-if ($stream = \json_decode(\trim(\file_get_contents('php://input')), true)) {
-    $data = \array_merge($data, $stream);
+if ($data = \json_decode(\trim(\file_get_contents('php://input')), true)) {
+    $data = \array_merge($_REQUEST, $data);
+} else {
+    $data = $_REQUEST;
 }
 
 $operation = (string) ($data['operation'] ?? '');
+
+if (empty($operation)) {
+    \http_response_code(500);
+
+    exit(\json_encode('The `operation` must be specified'));
+}
 
 $webhooks = App::getWebHooksFromConfig()[$operation] ?? [];
 
