@@ -12,9 +12,27 @@ namespace Vgrish\MindBox\MS2\Tools;
 
 class Headers
 {
-    public static function validateWebHookAuthorizationHeader(array $headers, string $secretKey): bool
+    public static function getAll(?string $key = null): array
     {
-        $header = (string) ($headers['Authorization'] ?? '');
+        static $headers = [];
+
+        if (empty($headers)) {
+            foreach (getallheaders() as $key => $value) {
+                $headers[\mb_strtolower($key)] = $value;
+            }
+        }
+
+        return $headers;
+    }
+
+    public static function get(string $key): string
+    {
+        return self::getAll()[$key] ?? '';
+    }
+
+    public static function validateWebHookAuthorization(string $secretKey): bool
+    {
+        $header = self::get('authorization');
         $prefix = 'WebHookSecretKey ';
 
         if (!\str_starts_with($header, $prefix)) {
@@ -26,5 +44,26 @@ class Headers
         }
 
         return true;
+    }
+
+    public static function validateUserAgentIsBot(string $pattern): bool
+    {
+        $header = self::get('user-agent');
+
+        if (empty($header)) {
+            return false;
+        }
+
+        $pattern = \array_filter(\array_map('trim', \explode('|', $pattern)));
+
+        if (empty($pattern)) {
+            return false;
+        }
+
+        if (\preg_match('~(' . \implode('|', $pattern) . ')~i', $header)) {
+            return true;
+        }
+
+        return false;
     }
 }
