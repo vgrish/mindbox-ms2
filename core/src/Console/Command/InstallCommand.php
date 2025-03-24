@@ -141,6 +141,24 @@ class InstallCommand extends Command
             $output->writeln(\sprintf('<info>Created system setting `%s`</info>', $key));
         }
 
+        $key = App::NAMESPACE . '.bot_patterns';
+
+        if (!$modx->getObject(\modSystemSetting::class, $key)) {
+            $setting = new \modSystemSetting($modx);
+            $setting->fromArray(
+                [
+                    'key' => $key,
+                    'namespace' => App::NAME,
+                    'xtype' => 'textfield',
+                    'value' => 'Yandex|Google|Yahoo|Rambler|Mail|Bot|Spider|Snoopy|Crawler|Finder|curl|Wget|Go-http-client|Postman',
+                ],
+                false,
+                true,
+            );
+            $setting->save();
+            $output->writeln(\sprintf('<info>Created system setting `%s`</info>', $key));
+        }
+
         $schemaFile = $corePath . '/schema/' . App::NAMESPACE . '.mysql.schema.xml';
 
         if (\file_get_contents($schemaFile)) {
