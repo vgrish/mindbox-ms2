@@ -25,7 +25,7 @@ class App
     public const AUTHOR = 'vgrish';
     public const NAME = 'MindBoxMS2';
     public const NAMESPACE = 'mindbox-ms2';
-    public const VERSION = '1.0.2';
+    public const VERSION = '1.0.3';
     public const WORKERS = 'workers';
     public const WEBHOOKS = 'webhooks';
     public \modX $modx;
