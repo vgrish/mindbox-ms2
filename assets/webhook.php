@@ -51,7 +51,7 @@ if (!$app = $modx->services[App::NAME] ?? null) {
     $app = $modx->services[App::NAME] = new App($modx);
 }
 
-if (!Headers::validateAWebHookAuthorizationHeader(
+if (!Headers::validateWebHookAuthorizationHeader(
     getallheaders(),
     (string) $modx->getOption(App::NAMESPACE . '.webhook_secret_key', null),
 )) {

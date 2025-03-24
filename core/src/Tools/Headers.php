@@ -12,7 +12,7 @@ namespace Vgrish\MindBox\MS2\Tools;
 
 class Headers
 {
-    public static function validateAWebHookAuthorizationHeader(array $headers, string $secretKey): bool
+    public static function validateWebHookAuthorizationHeader(array $headers, string $secretKey): bool
     {
         $header = (string) ($headers['Authorization'] ?? '');
         $prefix = 'WebHookSecretKey ';
