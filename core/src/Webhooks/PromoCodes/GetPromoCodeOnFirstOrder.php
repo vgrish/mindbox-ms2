@@ -15,12 +15,17 @@ use Vgrish\MindBox\MS2\WebHookResult;
 
 class GetPromoCodeOnFirstOrder extends WebHook
 {
+    /**
+     * config.email - `<почта пользователя>`
+     * config.discount - `<процент скидки>`
+     * config.discount_lifetime - `<срок жизни скидки в днях>`.
+     */
     public function process(): WebHookResult
     {
-        $email = $this->config['email'] ?? '';
+        $email = \mb_strtolower(\trim((string) ($this->config['email'] ?? '')), 'utf-8');
 
         if (!\preg_match('/^\S+@\S+[.]\S+$/', $email)) {
-            return $this->error();
+            return $this->error(['error' => 'Не верный email!']);
         }
 
         $modx = $this->modx;
@@ -30,7 +35,7 @@ class GetPromoCodeOnFirstOrder extends WebHook
         }
 
         if ($modx->getCount(\msOrder::class, ['user_id' => $user->get('id')])) {
-            return $this->error();
+            return $this->error(['error' => 'Уже есть первый заказ!']);
         }
 
         $modx->newObject(\mspc2Coupon::class);
@@ -39,7 +44,11 @@ class GetPromoCodeOnFirstOrder extends WebHook
             throw new \LogicException(\sprintf('%s the `%s` class does not exist', static::class, 'mspc2Coupon'));
         }
 
-        $code = \sprintf('F-%05d-%s', $user->get('id'), \mb_substr(\str_shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZ'), 0, 4));
+        $code = \sprintf(
+            'FIRST-%05d-%s',
+            $user->get('id'),
+            \mb_substr(\str_shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZ'), 0, 4),
+        );
 
         $c = $modx->newQuery(\mspc2Coupon::class);
         $c->where([
@@ -47,6 +56,18 @@ class GetPromoCodeOnFirstOrder extends WebHook
         ]);
 
         if (!$coupon = $modx->getObject(\mspc2Coupon::class, $c)) {
+            $discount = (int) ($this->config['discount'] ?? 0);
+
+            if (empty($discount)) {
+                $discount = 7;
+            }
+
+            $discountLifetime = (int) ($this->config['discount_lifetime'] ?? 0);
+
+            if (empty($discountLifetime)) {
+                $discountLifetime = 14;
+            }
+
             $coupon = $modx->newObject(\mspc2Coupon::class);
             $coupon->fromArray([
                 // код промокода
@@ -54,13 +75,13 @@ class GetPromoCodeOnFirstOrder extends WebHook
                 // кол-во применений промокода
                 'count' => 1,
                 // скидка промокода
-                'discount' => '5%',
+                'discount' => $discount . '%',
                 // описание промокода
-                'description' => '',
+                'description' => $email,
                 // дата начала действия промокода
                 'startedon' => \time(),
                 // дата окончания действия промокода
-                'stoppedon' => 0,
+                'stoppedon' => \strtotime(\sprintf('+%s days', $discountLifetime)),
                 // Показывать предупреждения
                 'showinfo' => true,
                 // Скидка на всю корзину
@@ -83,7 +104,7 @@ class GetPromoCodeOnFirstOrder extends WebHook
         }
 
         if (!$coupon || !$coupon->get('active')) {
-            return $this->error();
+            return $this->error(['error' => 'Скидочный купон не активен!']);
         }
 
         $data = [
