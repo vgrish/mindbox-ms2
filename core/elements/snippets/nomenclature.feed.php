@@ -339,5 +339,12 @@ $xml->endElement();
 $xml->endElement();
 $xml->endDocument();
 
+if (isset($_GET['format'])) {
+    \header('Content-Type: text/plain; charset=UTF-8');
+    echo $xml->outputMemory();
+
+    exit;
+}
+
 \header('Content-type: text/xml');
 echo $xml->outputMemory();
