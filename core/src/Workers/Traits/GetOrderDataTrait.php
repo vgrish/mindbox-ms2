@@ -10,6 +10,8 @@ declare(strict_types=1);
 
 namespace Vgrish\MindBox\MS2\Workers\Traits;
 
+use Vgrish\MindBox\MS2\Tools\Extensions;
+
 trait GetOrderDataTrait
 {
     public function getOrderData(\msOrder $msOrder): array
@@ -23,22 +25,20 @@ trait GetOrderDataTrait
 
         $discounts = [];
 
-        // TODO
-        if (isset($this->modx->map['mspcOrder']) && $mspcOrder = $this->modx->getObject(
-            \mspcOrder::class,
-            ['order_id' => $msOrder->get('id')],
-        )) {
-            $discounts = [
-                [
-                    'type' => 'promoCode',
-                    'promoCode' => [
-                        'ids' => [
-                            'code' => $mspcOrder->get('code'),
+        if (Extensions::isExist('msPromoCode2')) {
+            if ($mspcOrder = $this->modx->getObject(\mspcOrder::class, ['order_id' => $msOrder->get('id')])) {
+                $discounts = [
+                    [
+                        'type' => 'promoCode',
+                        'promoCode' => [
+                            'ids' => [
+                                'code' => $mspcOrder->get('code'),
+                            ],
                         ],
+                        'amount' => $mspcOrder->get('discount_amount'),
                     ],
-                    'amount' => $mspcOrder->get('discount_amount'),
-                ],
-            ];
+                ];
+            }
         }
 
         $lines = [];
