@@ -24,7 +24,7 @@ class ClearCart extends Worker
         $params = $this->event->params;
         $cart = $params['cart'] ?? null;
 
-        if (!(\is_object($cart) && \is_a($cart, \msCartInterface::class))) {
+        if (!\is_a($cart, \msCartInterface::class)) {
             return $this->error();
         }
 
