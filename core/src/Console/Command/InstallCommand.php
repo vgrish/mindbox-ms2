@@ -316,6 +316,28 @@ class InstallCommand extends Command
             }
         }
 
+        if (!$snippet = $modx->getObject(\modSnippet::class, ['name' => App::NAME . '.nomenclature.feed'])) {
+            $snippet = $modx->newObject(\modSnippet::class);
+            $snippet->fromArray(
+                [
+                    'name' => App::NAME . '.Nomenclature.feed',
+                    'description' => '',
+                    'source' => 1,
+                    'static' => true,
+                    'static_file' => \str_replace(MODX_BASE_PATH, '', $corePath . '/elements/snippets/nomenclature.feed.php'),
+                    'category' => $categoryId,
+                    'propertiers' => [],
+                    'new' => true,
+                ],
+                '',
+                true,
+                true,
+            );
+        }
+
+        $snippet->save();
+        $output->writeln(\sprintf('<info>%s snippet `%s`</info>', $snippet->get('new') ? 'Created' : 'Updated', $snippet->get('name')));
+
         $modx->getCacheManager()->refresh();
         $output->writeln('<info>Cleared MODX cache</info>');
 
