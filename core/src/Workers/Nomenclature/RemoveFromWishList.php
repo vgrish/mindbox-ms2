@@ -26,23 +26,24 @@ class RemoveFromWishList extends Worker
         $props = $params['props'] ?? [];
         $method = (string) ($props['method'] ?? '');
 
-        if ('remove' !== $method) {
+        if ('remove' !== $method || !($id = (int) ($props['key'] ?? 0))) {
             return $this->error();
         }
 
-        $c = $this->modx->newQuery(\msProduct::class);
-        $c->where([
-            'id' => (int) ($props['key'] ?? 0),
-            'published' => true,
-        ]);
+        /** @var \msProduct $resource */
+        $resource = $this->modx->getObject(\msProduct::class, $id);
 
-        if ($resource = $this->modx->getObject(\msProduct::class, $c)) {
+        if (!$this->isResourceAvailable($resource)) {
+            return $this->error();
+        }
+
+        if ($websiteId = $this->app->getNomenclatureWebsiteId($resource)) {
             $data = [
                 'removeProductFromList' => [
                     'pricePerItem' => $resource->getPrice(),
                     'product' => [
                         'ids' => [
-                            'website' => $resource->get('id'),
+                            'website' => $websiteId,
                         ],
                     ],
                 ],

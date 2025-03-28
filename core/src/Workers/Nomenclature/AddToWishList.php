@@ -26,24 +26,24 @@ class AddToWishList extends Worker
         $props = $params['props'] ?? [];
         $method = (string) ($props['method'] ?? '');
 
-        if ('add' !== $method) {
+        if ('add' !== $method || !($id = (int) ($props['key'] ?? 0))) {
             return $this->error();
         }
 
-        $c = $this->modx->newQuery(\msProduct::class);
-        $c->where([
-            'id' => (int) ($props['key'] ?? 0),
-            'published' => true,
-        ]);
-
         /** @var \msProduct $resource */
-        if ($resource = $this->modx->getObject(\msProduct::class, $c)) {
+        $resource = $this->modx->getObject(\msProduct::class, $id);
+
+        if (!$this->isResourceAvailable($resource)) {
+            return $this->error();
+        }
+
+        if ($websiteId = $this->app->getNomenclatureWebsiteId($resource)) {
             $data = [
                 'addProductToList' => [
                     'pricePerItem' => $resource->getPrice(),
                     'product' => [
                         'ids' => [
-                            'website' => $resource->get('id'),
+                            'website' => $websiteId,
                         ],
                     ],
                 ],

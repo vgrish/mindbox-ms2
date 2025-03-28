@@ -23,6 +23,7 @@ trait GetOrderDataTrait
 
         $discounts = [];
 
+        // TODO
         if (isset($this->modx->map['mspcOrder']) && $mspcOrder = $this->modx->getObject(
             \mspcOrder::class,
             ['order_id' => $msOrder->get('id')],
@@ -46,18 +47,20 @@ trait GetOrderDataTrait
         $products = $this->modx->getCollection(\msOrderProduct::class, ['order_id' => $msOrder->get('id')]);
 
         foreach ($products as $product) {
-            $lines[] = [
-                'basePricePerItem' => $product->get('price'),
-                'quantity' => $product->get('count'),
-                'quantityType' => 'int',
-                'discountedPricePerLine' => $product->get('cost'),
-                'status' => $msOrder->get('status'),
-                'product' => [
-                    'ids' => [
-                        'website' => $product->get('product_id'),
+            if ($websiteId = $this->app->getNomenclatureWebsiteId($product->get('product_id'), $product->get('options'))) {
+                $lines[] = [
+                    'basePricePerItem' => $product->get('price'),
+                    'quantity' => $product->get('count'),
+                    'quantityType' => 'int',
+                    'discountedPricePerLine' => $product->get('cost'),
+                    'status' => $msOrder->get('status'),
+                    'product' => [
+                        'ids' => [
+                            'website' => $websiteId,
+                        ],
                     ],
-                ],
-            ];
+                ];
+            }
         }
 
         return [

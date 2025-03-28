@@ -33,7 +33,7 @@ class UpdateOrder extends Worker
 
         $msOrder = $params['msOrder'] ?? null;
 
-        if (\is_object($msOrder) && \is_a($msOrder, \msOrder::class)) {
+        if (\is_a($msOrder, \msOrder::class)) {
             $data = $this->formatData(UpdateOrderDataDto::class, $this->getOrderData($msOrder));
 
             return $this->success($data);

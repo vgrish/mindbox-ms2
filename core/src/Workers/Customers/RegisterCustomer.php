@@ -13,9 +13,11 @@ namespace Vgrish\MindBox\MS2\Workers\Customers;
 use Vgrish\MindBox\MS2\Dto\Data\Customers\RegisterCustomerDataDto;
 use Vgrish\MindBox\MS2\Worker;
 use Vgrish\MindBox\MS2\WorkerResult;
+use Vgrish\MindBox\MS2\Workers\Traits\GetCustomerDataTrait;
 
 class RegisterCustomer extends Worker
 {
+    use GetCustomerDataTrait;
     protected static string $operation = 'Website.RegisterCustomer';
     protected static bool $isAsyncOperation = false;
     protected static bool $isClientRequired = true;
@@ -30,30 +32,8 @@ class RegisterCustomer extends Worker
             return $this->error();
         }
 
-        if (\is_object($user) && \is_a($user, \modUser::class)) {
-            if (!$profile = $user->getOne('Profile')) {
-                $profile = $this->modx->newObject(\modUserProfile::class);
-            }
-
-            $data = [
-                'customer' => [
-                    'sex' => match ($profile->get('gender')) {
-                        1 => 'male',
-                        2 => 'female',
-                        default => null,
-                    },
-                    'fullName' => $profile->get('fullname'),
-                    'email' => $profile->get('email'),
-                    'mobilePhone' => $profile->get('mobilephone'),
-
-                    'ids' => [
-                        'websiteID' => $user->get('id'),
-                    ],
-                    'phone' => $profile->get('phone'),
-                ],
-            ];
-
-            $data = $this->formatData(RegisterCustomerDataDto::class, $data);
+        if (\is_a($user, \modUser::class)) {
+            $data = $this->formatData(RegisterCustomerDataDto::class, $this->getCustomerData($user));
 
             return $this->success($data);
         }

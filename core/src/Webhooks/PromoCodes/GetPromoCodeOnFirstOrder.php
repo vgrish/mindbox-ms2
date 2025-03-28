@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace Vgrish\MindBox\MS2\Webhooks\PromoCodes;
 
+use Vgrish\MindBox\MS2\Tools\Extensions;
 use Vgrish\MindBox\MS2\WebHook;
 use Vgrish\MindBox\MS2\WebHookResult;
 
@@ -22,6 +23,10 @@ class GetPromoCodeOnFirstOrder extends WebHook
      */
     public function process(): WebHookResult
     {
+        if (!Extensions::isExist('msPromoCode2')) {
+            return $this->error(['error' => 'msPromoCode2 required!']);
+        }
+
         $email = \mb_strtolower(\trim((string) ($this->config['email'] ?? '')), 'utf-8');
 
         if (!\preg_match('/^\S+@\S+[.]\S+$/', $email)) {

@@ -28,12 +28,16 @@ class ViewCategory extends Worker
 
         $resource = $this->modx?->resource;
 
-        if (\is_object($resource) && !\is_a($resource, \msProduct::class)) {
+        if (!$this->isResourceAvailable($resource)) {
+            return $this->error();
+        }
+
+        if (!\is_a($resource, \msProduct::class) && ($websiteId = $this->app->getNomenclatureWebsiteId($resource))) {
             $data = [
                 'viewProductCategory' => [
                     'productCategory' => [
                         'ids' => [
-                            'website' => $resource->get('id'),
+                            'website' => $websiteId,
                         ],
                     ],
                 ],

@@ -28,7 +28,7 @@ class SetCart extends Worker
 
         $cart = $params['cart'] ?? null;
 
-        if (\is_object($cart) && \is_a($cart, \msCartInterface::class)) {
+        if (\is_a($cart, \msCartInterface::class)) {
             $productList = [];
 
             foreach ($cart->get() as $row) {
@@ -36,15 +36,17 @@ class SetCart extends Worker
                     continue;
                 }
 
-                $productList[] = [
-                    'count' => $count,
-                    'pricePerItem' => $row['price'] ?? 0,
-                    'product' => [
-                        'ids' => [
-                            'website' => $row['id'] ?? null,
+                if ($websiteId = $this->app->getNomenclatureWebsiteId($row['id'], $row['options'] ?? null)) {
+                    $productList[] = [
+                        'count' => $count,
+                        'pricePerItem' => $row['price'] ?? 0,
+                        'product' => [
+                            'ids' => [
+                                'website' => $websiteId,
+                            ],
                         ],
-                    ],
-                ];
+                    ];
+                }
             }
 
             if (!empty($productList)) {

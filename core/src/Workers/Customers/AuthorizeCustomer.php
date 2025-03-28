@@ -13,9 +13,11 @@ namespace Vgrish\MindBox\MS2\Workers\Customers;
 use Vgrish\MindBox\MS2\Dto\Data\Customers\AuthorizeCustomerDataDto;
 use Vgrish\MindBox\MS2\Worker;
 use Vgrish\MindBox\MS2\WorkerResult;
+use Vgrish\MindBox\MS2\Workers\Traits\GetCustomerDataTrait;
 
 class AuthorizeCustomer extends Worker
 {
+    use GetCustomerDataTrait;
     protected static string $operation = 'Website.AuthorizeCustomer';
     protected static bool $isAsyncOperation = false;
     protected static bool $isClientRequired = true;
@@ -25,30 +27,8 @@ class AuthorizeCustomer extends Worker
         $params = $this->event->params;
         $user = $params['user'] ?? null;
 
-        if (\is_object($user) && \is_a($user, \modUser::class)) {
-            if (!$profile = $user->getOne('Profile')) {
-                $profile = $this->modx->newObject(\modUserProfile::class);
-            }
-
-            $data = [
-                'customer' => [
-                    'sex' => match ($profile->get('gender')) {
-                        1 => 'male',
-                        2 => 'female',
-                        default => null,
-                    },
-                    'fullName' => $profile->get('fullname'),
-                    'email' => $profile->get('email'),
-                    'mobilePhone' => $profile->get('mobilephone'),
-
-                    'ids' => [
-                        'websiteID' => $user->get('id'),
-                    ],
-                    'phone' => $profile->get('phone'),
-                ],
-            ];
-
-            $data = $this->formatData(AuthorizeCustomerDataDto::class, $data);
+        if (\is_a($user, \modUser::class)) {
+            $data = $this->formatData(AuthorizeCustomerDataDto::class, $this->getCustomerData($user));
 
             return $this->success($data);
         }

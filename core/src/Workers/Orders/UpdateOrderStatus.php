@@ -31,7 +31,7 @@ class UpdateOrderStatus extends Worker
 
         $msOrder = $params['order'] ?? null;
 
-        if (\is_object($msOrder) && \is_a($msOrder, \msOrder::class)) {
+        if (\is_a($msOrder, \msOrder::class)) {
             $data = [
                 'orderLinesStatus' => $status,
                 'order' => [
