@@ -159,6 +159,60 @@ class InstallCommand extends Command
             $output->writeln(\sprintf('<info>Created system setting `%s`</info>', $key));
         }
 
+        $key = App::NAMESPACE . '.nomenclature_website_key';
+
+        if (!$modx->getObject(\modSystemSetting::class, $key)) {
+            $setting = new \modSystemSetting($modx);
+            $setting->fromArray(
+                [
+                    'key' => $key,
+                    'namespace' => App::NAME,
+                    'xtype' => 'textfield',
+                    'value' => 'id',
+                ],
+                false,
+                true,
+            );
+            $setting->save();
+            $output->writeln(\sprintf('<info>Created system setting `%s`</info>', $key));
+        }
+
+        $key = App::NAMESPACE . '.nomenclature_modification_website_key';
+
+        if (!$modx->getObject(\modSystemSetting::class, $key)) {
+            $setting = new \modSystemSetting($modx);
+            $setting->fromArray(
+                [
+                    'key' => $key,
+                    'namespace' => App::NAME,
+                    'xtype' => 'textfield',
+                    'value' => 'id',
+                ],
+                false,
+                true,
+            );
+            $setting->save();
+            $output->writeln(\sprintf('<info>Created system setting `%s`</info>', $key));
+        }
+
+        $key = App::NAMESPACE . '.nomenclature_united_website_key';
+
+        if (!$modx->getObject(\modSystemSetting::class, $key)) {
+            $setting = new \modSystemSetting($modx);
+            $setting->fromArray(
+                [
+                    'key' => $key,
+                    'namespace' => App::NAME,
+                    'xtype' => 'combo-boolean',
+                    'value' => true,
+                ],
+                false,
+                true,
+            );
+            $setting->save();
+            $output->writeln(\sprintf('<info>Created system setting `%s`</info>', $key));
+        }
+
         $schemaFile = $corePath . '/schema/' . App::NAMESPACE . '.mysql.schema.xml';
 
         if (\file_get_contents($schemaFile)) {
@@ -201,27 +255,6 @@ class InstallCommand extends Command
             \chmod($config, 0o644);
         }
 
-        //        foreach (
-        //            [
-        //                'OnBeforeNotifySend',
-        //                'OnActionOrderLoad',
-        //            ] as $eventName
-        //        ) {
-        //            if (!$modx->getObject(\modEvent::class, [
-        //                'name' => App::NAME . $eventName,
-        //                'groupname' => App::NAME,
-        //            ])) {
-        //                $event = new \modEvent($modx);
-        //                $event->fromArray([
-        //                    'name' => App::NAME . $eventName,
-        //                    'service' => 6,
-        //                    'groupname' => App::NAME,
-        //                ], '', true, true);
-        //                $event->save();
-        //                $output->writeln('<info>Created event "' . $event->get('name') . '"</info>');
-        //            }
-        //        }
-
         if (!$plugin = $modx->getObject(\modPlugin::class, ['name' => App::NAME])) {
             $plugin = new \modPlugin($modx);
             $plugin->fromArray(
@@ -250,6 +283,7 @@ class InstallCommand extends Command
                 'OnWebLogin',
                 // '-----------------',
                 'OnWebPagePrerender',
+                'msopOnViewModification',
                 'msOnAddToCart',
                 'msOnChangeInCart',
                 'msOnRemoveFromCart',

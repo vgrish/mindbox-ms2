@@ -12,35 +12,26 @@ namespace Vgrish\MindBox\MS2;
 
 class WebHookManager
 {
-    public static function load(App $app, mixed $webhooks, array $data): WebHookResult
+    public static function load(App $app, string $operation, array $data): WebHookResult
     {
-        $result = new WebHookResult(false, $data);
+        $results = [];
+        $webhooks = $app->config->getWebhooksConfig()->getHandlersForOperation($operation);
 
-        if (!empty($webhooks)) {
-            if (\is_string($webhooks)) {
-                $webhooks = [$webhooks];
+        foreach ($webhooks as $webhook) {
+            try {
+                /** @var WebHookInterface $hook */
+                $hook = new $webhook($app, $data);
+
+                $results[] = $hook->run();
+            } catch (\Throwable  $e) {
+                $app->modx->log(\modX::LOG_LEVEL_ERROR, \var_export($e->getMessage(), true));
             }
+        }
 
-            if (\is_array($webhooks)) {
-                $webhooks = \array_filter($webhooks, static function ($class) {
-                    return \is_string($class) && !empty($class);
-                });
-
-                $results = [];
-
-                foreach ($webhooks as $webhook) {
-                    try {
-                        /** @var WebHookInterface $hook */
-                        $hook = new $webhook($app, $data);
-
-                        $results[] = $hook->run();
-                    } catch (\Throwable  $e) {
-                        $app->modx->log(\modX::LOG_LEVEL_ERROR, \var_export($e->getMessage(), true));
-                    }
-                }
-
-                $result = WebHookResult::merge($results);
-            }
+        if (!empty($results)) {
+            $result = WebHookResult::merge($results);
+        } else {
+            $result = new WebHookResult(false, $data);
         }
 
         return $result;

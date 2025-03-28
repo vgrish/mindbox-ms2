@@ -166,6 +166,15 @@ abstract class Worker implements WorkerInterface
         return Headers::validateUserAgentIsBot(self::$botPatterns);
     }
 
+    public function isResourceAvailable(?\modResource $resource): bool
+    {
+        if (\is_a($resource, \modResource::class)) {
+            return $resource->get('published') && !$resource->get('deletedon');
+        }
+
+        return false;
+    }
+
     protected function getContextKey(): string
     {
         $ctx = (string) $this->modx?->context->get('key');

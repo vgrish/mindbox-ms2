@@ -8,15 +8,21 @@ declare(strict_types=1);
  * @see https://github.com/vgrish/mindbox-ms2
  */
 
-use Vgrish\MindBox\MS2\App;
+use Vgrish\MindBox\MS2\Config;
+use Vgrish\MindBox\MS2\Tools\Extensions;
 use Vgrish\MindBox\MS2\Webhooks;
 use Vgrish\MindBox\MS2\Workers;
 
-return [
-    App::WORKERS => [
+$config = Vgrish\MindBox\MS2\Config\Config::init();
+
+$config = $config->withWorkers(
+    Config\WorkersConfig::fromArray([
         'OnWebPagePrerender' => [
             Workers\Nomenclature\ViewCategory::class,
             Workers\Nomenclature\ViewProduct::class,
+        ],
+        'msopOnViewModification' => [
+            Workers\Nomenclature\ViewModification::class,
         ],
         'OnWebLogin' => [
             Workers\Customers\AuthorizeCustomer::class,
@@ -54,9 +60,21 @@ return [
             Workers\Nomenclature\RemoveFromWishList::class,
             Workers\Nomenclature\ClearWishList::class,
         ],
-    ],
+    ]),
+);
 
-    App::WEBHOOKS => [
-        'GetPromoCodeOnFirstOrder' => Webhooks\PromoCodes\GetPromoCodeOnFirstOrder::class,
-    ],
-];
+$config = $config->withWebHooks(
+    Config\WebHooksConfig::fromArray([
+        'GetPromoCodeOnFirstOrder' => [
+            Webhooks\PromoCodes\GetPromoCodeOnFirstOrder::class,
+        ],
+    ]),
+);
+
+$config = $config->withExtensions(
+    Config\ExtensionsConfig::fromArray([
+        Config\Config::getNomenclatureWebsiteId => static fn (...$args) => Extensions::getNomenclatureWebsiteId(...$args),
+    ]),
+);
+
+return $config;

@@ -53,5 +53,5 @@ require MODX_CORE_PATH . 'vendor/autoload.php';
 use Vgrish\MindBox\MS2\App;
 
 if (!$app = $modx->services[App::NAME] ?? null) {
-    $modx->services[App::NAME] = new App($modx);
+    $app = $modx->services[App::NAME] = App::fromConfigFile($modx, __DIR__ . '/config.php');
 }

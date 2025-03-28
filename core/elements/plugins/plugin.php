@@ -13,8 +13,9 @@ use Vgrish\MindBox\MS2\WorkerManager;
 
 /** @var modX $modx */
 /** @var array $scriptProperties */
+/** @var App $app */
 if (!$app = $modx->services[App::NAME] ?? null) {
     return;
 }
 
-WorkerManager::load($app, App::getWorkersFromConfig()[$modx->event->name] ?? []);
+WorkerManager::load($app, $modx->event);

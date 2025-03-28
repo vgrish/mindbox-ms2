@@ -12,13 +12,17 @@ namespace Vgrish\MindBox\MS2;
 
 use CuyZ\Valinor\Cache\FileSystemCache;
 use CuyZ\Valinor\Cache\FileWatchingCache;
+use CuyZ\Valinor\Mapper\TreeMapper;
 use CuyZ\Valinor\MapperBuilder;
 use CuyZ\Valinor\Normalizer\Format;
+use CuyZ\Valinor\Normalizer\Normalizer;
+use Vgrish\MindBox\MS2\Config\Config;
 use Vgrish\MindBox\MS2\Dto\Entities\HiddenValueDto;
 use Vgrish\MindBox\MS2\Http\ApiClient;
 use Vgrish\MindBox\MS2\Http\GuzzleSenderFactory;
 use Vgrish\MindBox\MS2\Http\RequestSenderFactoryInterface;
 use Vgrish\MindBox\MS2\Tools\ClassFinder;
+use Vgrish\MindBox\MS2\Tools\Extensions;
 
 class App
 {
@@ -26,15 +30,12 @@ class App
     public const NAME = 'MindBoxMS2';
     public const NAMESPACE = 'mindbox-ms2';
     public const VERSION = '1.0.3';
-    public const WORKERS = 'workers';
-    public const WEBHOOKS = 'webhooks';
-    public \modX $modx;
     protected ?ApiClient $apiClient = null;
 
-    public function __construct(\modX $modx, $config = [])
-    {
-        $this->modx = $modx;
-
+    public function __construct(
+        public \modX $modx,
+        public Config $config,
+    ) {
         // HACK for loading models with namespace
         if (\is_dir(MODX_CORE_PATH . 'components/' . self::NAMESPACE)) {
             $models = ClassFinder::findByRegex(
@@ -58,6 +59,30 @@ class App
                 }
             }
         }
+    }
+
+    public static function fromConfigFile(\modX $modx, string $file): self
+    {
+        $config = null;
+
+        if (\file_exists($file)) {
+            $config = require_once $file;
+        }
+
+        if (!$config instanceof Config) {
+            $config = Config::init();
+            $modx->log(\modX::LOG_LEVEL_ERROR, \sprintf('Invalid config file `%s`, expected `%s`', $file, Config::class));
+        }
+
+        return self::fromConfig($modx, $config);
+    }
+
+    public static function fromConfig(\modX $modx, Config $config): self
+    {
+        return new self(
+            $modx,
+            $config,
+        );
     }
 
     public function getOption($key, $config = [], $default = null, $skipEmpty = false)
@@ -122,12 +147,12 @@ class App
         return $mapper;
     }
 
-    public function getMappper()
+    public function getMappper(): ?TreeMapper
     {
         return $this->getValinorMapperBuilder()?->mapper();
     }
 
-    public function getNormalizer()
+    public function getNormalizer(): ?Normalizer
     {
         return $this->getValinorMapperBuilder()?->normalizer(Format::array());
     }
@@ -189,34 +214,15 @@ class App
         return \is_a($customer, \modUser::class) ? $customer : null;
     }
 
-    public static function getConfigFromFile(): array
+    public function getNomenclatureWebsiteId(null|array|int|\modResource|string $resource = null, null|array|\msopModification $modification = null): null|int|string
     {
-        static $config = [];
+        $getter = $this->config->getExtensionsConfig()->getHandlersForExtension(Config::getNomenclatureWebsiteId);
 
-        if (empty($config)) {
-            $file = MODX_CORE_PATH . 'components/' . self::NAMESPACE . '/config.php';
-
-            if (\file_exists($file) && \is_writable(\dirname($file))) {
-                $config = include $file;
-            } else {
-                $config = [];
-            }
+        if (!\is_callable($getter)) {
+            $this->modx->log(\modX::LOG_LEVEL_ERROR, \sprintf('Incorrect `%s` getter', Config::getNomenclatureWebsiteId));
+            $getter = [Extensions::class, Config::getNomenclatureWebsiteId];
         }
 
-        return (array) $config;
-    }
-
-    public static function getWorkersFromConfig(): array
-    {
-        $workers = static::getConfigFromFile()[static::WORKERS] ?? [];
-
-        return (array) $workers;
-    }
-
-    public static function getWebHooksFromConfig(): array
-    {
-        $webhooks = static::getConfigFromFile()[static::WEBHOOKS] ?? [];
-
-        return (array) $webhooks;
+        return $getter($this->modx, $resource, $modification);
     }
 }

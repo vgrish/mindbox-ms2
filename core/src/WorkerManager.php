@@ -12,28 +12,18 @@ namespace Vgrish\MindBox\MS2;
 
 class WorkerManager
 {
-    public static function load(App $app, mixed $workers): void
+    public static function load(App $app, \modSystemEvent $event): void
     {
-        if (!empty($workers)) {
-            if (\is_string($workers)) {
-                $workers = [$workers];
-            }
+        $workers = $app->config->getWorkersConfig()->getHandlersForEvent($event->name);
 
-            if (\is_array($workers)) {
-                $workers = \array_filter($workers, static function ($class) {
-                    return \is_string($class) && !empty($class);
-                });
+        foreach ($workers as $class) {
+            try {
+                /** @var WorkerInterface $worker */
+                $worker = new $class($app);
 
-                foreach ($workers as $class) {
-                    try {
-                        /** @var WorkerInterface $worker */
-                        $worker = new $class($app);
-
-                        $worker->run();
-                    } catch (\Throwable  $e) {
-                        $app->modx->log(\modX::LOG_LEVEL_ERROR, \var_export($e->getMessage(), true));
-                    }
-                }
+                $worker->run();
+            } catch (\Throwable  $e) {
+                $app->modx->log(\modX::LOG_LEVEL_ERROR, \var_export($e->getMessage(), true));
             }
         }
     }

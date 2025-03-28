@@ -48,7 +48,9 @@ use Vgrish\MindBox\MS2\Tools\Headers;
 use Vgrish\MindBox\MS2\WebHookManager;
 
 if (!$app = $modx->services[App::NAME] ?? null) {
-    $app = $modx->services[App::NAME] = new App($modx);
+    \http_response_code(503);
+
+    exit('Service Unavailable');
 }
 
 if (!Headers::validateWebHookAuthorization((string) $modx->getOption(App::NAMESPACE . '.webhook_secret_key', null))) {
@@ -71,10 +73,8 @@ if (empty($operation)) {
     exit(\json_encode('The `operation` must be specified'));
 }
 
-$webhooks = App::getWebHooksFromConfig()[$operation] ?? [];
-
 try {
-    $result = WebHookManager::load($app, $webhooks, $data);
+    $result = WebHookManager::load($app, $operation, $data);
 
     if (!$result->success) {
         \http_response_code(400);
