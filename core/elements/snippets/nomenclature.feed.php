@@ -182,13 +182,7 @@ $leftJoin = [
 $select = [
     'msopModification' => !empty($includeContent)
         ? $modx->getSelectColumns('msopModification', 'msopModification') . ', `msopModification`.`name` as `pagetitle`'
-        : $modx->getSelectColumns(
-            'msopModification',
-            'msopModification',
-            '',
-            ['description'],
-            true,
-        ) . ', `msopModification`.`name` as `pagetitle`',
+        : $modx->getSelectColumns('msopModification', 'msopModification', '', ['description'], true) . ', `msopModification`.`name` as `pagetitle`',
     'Option' => 'GROUP_CONCAT(CONCAT_WS("[]=",`Option`.`key`,`Option`.`value`) SEPARATOR "&") as options',
 ];
 
