@@ -33,6 +33,8 @@ class Offer
         #[\Vgrish\MindBox\MS2\Dto\Casters\FloatCaster()]
         public null|float|int|string $price,
         #[\Vgrish\MindBox\MS2\Dto\Casters\StringCaster()]
+        public null|float|int|string $old_price,
+        #[\Vgrish\MindBox\MS2\Dto\Casters\StringCaster()]
         public ?string $picture,
         #[\Vgrish\MindBox\MS2\Dto\Casters\StringCaster()]
         public ?string $url,
@@ -73,10 +75,29 @@ class Offer
          */
         #[\Vgrish\MindBox\MS2\Dto\Casters\HiddenValue()]
         public null|int|string $article,
+        /**
+         * @var null|int|string
+         */
+        #[\Vgrish\MindBox\MS2\Dto\Casters\HiddenValue()]
+        public null|int|string $active,
     ) {
         $this->id = $this->websiteId;
         $this->categoryId = $this->parentWebsiteId;
         $this->available = !empty($this->count) && ('0' !== $this->count);
+
+        if (empty($this->active)) {
+            $this->available = false;
+        }
+
+        $this->old_price = (int) $this->old_price;
+
+        if ((int) $this->price > $this->old_price) {
+            $this->old_price = null;
+        }
+
+        if (empty($this->old_price)) {
+            $this->old_price = null;
+        }
 
         $this->model = $this->article;
 
