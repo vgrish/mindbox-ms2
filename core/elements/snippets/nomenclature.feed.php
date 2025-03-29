@@ -12,6 +12,7 @@ use CuyZ\Valinor\Mapper\Source\Source;
 use Vgrish\MindBox\MS2\App;
 use Vgrish\MindBox\MS2\Dto\Entities\Feeds\Category;
 use Vgrish\MindBox\MS2\Dto\Entities\Feeds\Offer;
+use Vgrish\MindBox\MS2\Tools\Url;
 
 /** @var modX $modx */
 /** @var array $scriptProperties */
@@ -19,16 +20,6 @@ use Vgrish\MindBox\MS2\Dto\Entities\Feeds\Offer;
 if (!$app = $modx->services[App::NAME] ?? null) {
     return;
 }
-
-$format = static function (string $dtoClass, array $data) use ($app) {
-    $data = $app->getMappper()
-        ->map(
-            $dtoClass,
-            Source::array($data),
-        );
-
-    return $app->getNormalizer()->normalize($data);
-};
 
 $miniShop2 = $modx->getService('miniShop2');
 $miniShop2->initialize($modx->context->key);
@@ -99,6 +90,7 @@ $innerJoin = [];
 $leftJoin = [
     'Data' => ['class' => 'msProductData'],
     'Vendor' => ['class' => 'msVendor', 'on' => 'Data.vendor=Vendor.id'],
+    'ProductOption' => ['class' => 'msProductOption', 'on' => 'Data.id = ProductOption.product_id'],
 ];
 $select = [
     'msProduct' => !empty($includeContent)
@@ -106,6 +98,7 @@ $select = [
         : $modx->getSelectColumns('msProduct', 'msProduct', '', ['type', 'content'], true),
     'Data' => $modx->getSelectColumns('msProductData', 'Data', '', ['id'], true),
     'Vendor' => $modx->getSelectColumns('msVendor', 'Vendor', 'vendor.', ['id'], true),
+    'ProductOption' => 'GROUP_CONCAT(CONCAT_WS("[]=",`ProductOption`.`key`,`ProductOption`.`value`) SEPARATOR "&") as options',
 ];
 
 // TODO
@@ -149,11 +142,17 @@ if (!empty($rows) && \is_array($rows)) {
         $row['price'] = $product->getPrice($row);
         $row['weight'] = $product->getWeight($row);
 
-        // A discount here, so we should replace old price
         if ($row['price'] < $tmp) {
             $row['old_price'] = $tmp;
         }
 
+        if (empty($row['price']) || empty($row['published']) || !empty($row['deletedon'])) {
+            $row['active'] = 0;
+        } else {
+            $row['active'] = 1;
+        }
+
+        $row['options'] = !empty($row['options']) ? Url::parseStr($row['options']) : [];
         $row['idx'] = $pdoFetch->idx++;
         $row['websiteId'] = $websiteId;
 
@@ -176,15 +175,21 @@ $innerJoin = [];
 $leftJoin = [
     'Option' => [
         'class' => 'msopModificationOption',
-        'on' => 'Option.mid = msopModification.id',
+        'on' => 'msopModification.id = Option.mid',
     ],
 ];
 
 $select = [
     'msopModification' => !empty($includeContent)
-        ? $modx->getSelectColumns('msopModification', 'msopModification')
-        : $modx->getSelectColumns('msopModification', 'msopModification', '', ['description'], true),
-    'Option' => 'GROUP_CONCAT(CONCAT_WS("=",`Option`.`key`,`Option`.`value`) SEPARATOR "&") as options',
+        ? $modx->getSelectColumns('msopModification', 'msopModification') . ', `msopModification`.`name` as `pagetitle`'
+        : $modx->getSelectColumns(
+            'msopModification',
+            'msopModification',
+            '',
+            ['description'],
+            true,
+        ) . ', `msopModification`.`name` as `pagetitle`',
+    'Option' => 'GROUP_CONCAT(CONCAT_WS("[]=",`Option`.`key`,`Option`.`value`) SEPARATOR "&") as options',
 ];
 
 $default = [
@@ -215,6 +220,18 @@ if (!empty($rows) && \is_array($rows)) {
 
         $row = \array_merge($product, $row);
 
+        if (empty($row['pagetitle'])) {
+            $row['pagetitle'] = $product['pagetitle'] ?? 'id:' . $product['id'];
+        }
+
+        if (empty($row['price'])) {
+            $row['price'] = $product['price'] ?? 0;
+        }
+
+        if (empty($row['old_price'])) {
+            $row['old_price'] = $product['old_price'] ?? 0;
+        }
+
         if (empty($row['image'])) {
             $row['image'] = $product['image'] ?? '';
         }
@@ -223,12 +240,17 @@ if (!empty($rows) && \is_array($rows)) {
             $row['article'] = $product['article'] ?? '';
         }
 
-        \parse_str($row['options'] ?? '', $options);
-        $row['options'] = $options;
+        if (empty($row['price']) || empty($row['published']) || !empty($row['deletedon'])) {
+            $row['active'] = 0;
+        }
 
+        $row['options'] = \array_merge(
+            $product['options'] ?? [],
+            !empty($row['options']) ? Url::parseStr($row['options']) : [],
+        );
         $row['idx'] = $pdoFetch->idx++;
         $row['websiteId'] = $websiteId;
-        $row['parentWebsiteId'] = $app->getNomenclatureWebsiteId($row['rid']);
+        $row['parentWebsiteId'] = $app->getNomenclatureWebsiteId($row['parent']);
 
         $modifications[$row['id']] = $row;
     }
@@ -236,115 +258,160 @@ if (!empty($rows) && \is_array($rows)) {
 
 unset($rows);
 
-foreach ($categories as &$item) {
-    $item = $format(Category::class, $item);
-}
-
-foreach ($products as &$item) {
-    $item = $format(Offer::class, $item);
-}
-
-foreach ($modifications as &$item) {
-    $item = $format(Offer::class, $item);
-}
-
-$xml = new \XMLWriter();
-$xml->openMemory();
-$xml->setIndent(true);
-$xml->setIndentString('    ');
-
-$xml->startDocument('1.0', 'UTF-8');
-$xml->startElement('yml_catalog');
-$xml->writeAttribute('date', \date('Y-m-d H:i'));
-$xml->startElement('shop');
-
-// NOTE START categories
-$xml->startElement('categories');
-
-foreach ($categories as $row) {
-    $xml->startElement('category');
-    $xml->writeAttribute('id', $row['id']);
-
-    if (isset($row['parent'])) {
-        $xml->writeAttribute('parentId', $row['parent']);
+$format = static function (string $dtoClass, array $data) use ($app): ?array {
+    try {
+        $data = $app->getMappper()
+            ->map(
+                $dtoClass,
+                Source::array($data),
+            );
+        $data = $app->getNormalizer()->normalize($data);
+    } catch (\Throwable  $e) {
+        $app->modx->log(\modX::LOG_LEVEL_ERROR, \var_export($e->getMessage(), true));
+        $app->modx->log(\modX::LOG_LEVEL_ERROR, \var_export($data, true));
+        $data = null;
     }
 
-    $xml->text($row['pagetitle']);
-    $xml->endElement();
+    return $data;
+};
+
+foreach ($categories as $id => $row) {
+    if ($row = $format(Category::class, $row)) {
+        $categories[$id] = $row;
+    } else {
+        unset($categories[$id]);
+    }
 }
 
-// NOTE END categories
-$xml->endElement();
+foreach ($products as $id => $row) {
+    if ($row = $format(Offer::class, $row)) {
+        $products[$id] = $row;
+    } else {
+        unset($products[$id]);
+    }
+}
 
-// NOTE START offers
-$xml->startElement('offers');
+foreach ($modifications as $id => $row) {
+    if ($row = $format(Offer::class, $row)) {
+        $modifications[$id] = $row;
+    } else {
+        unset($modifications[$id]);
+    }
+}
 
-foreach ([$products, $modifications] as $rows) {
-    foreach ($rows as $row) {
-        $xml->startElement('offer');
+try {
+    $xml = new \XMLWriter();
+    $xml->openMemory();
+    $xml->setIndent(true);
+    $xml->setIndentString('    ');
+
+    $xml->startDocument('1.0', 'UTF-8');
+    $xml->startElement('yml_catalog');
+    $xml->writeAttribute('date', \date('Y-m-d H:i'));
+    $xml->startElement('shop');
+
+    // NOTE START categories
+    $xml->startElement('categories');
+
+    foreach ($categories as $row) {
+        $xml->startElement('category');
         $xml->writeAttribute('id', $row['id']);
-        $xml->writeAttribute('available', $row['available'] ? 'true' : 'false');
 
-        if (!empty($row['categoryId'])) {
-            $xml->startElement('categoryId');
-            $xml->text($row['categoryId']);
-            $xml->endElement();
+        if (isset($row['parent'])) {
+            $xml->writeAttribute('parentId', $row['parent']);
         }
 
-        $xml->startElement('name');
         $xml->text($row['pagetitle']);
         $xml->endElement();
+    }
 
-        if (!empty($row['model'])) {
-            $xml->startElement('model');
-            $xml->text($row['model']);
-            $xml->endElement();
-        }
+    // NOTE END categories
+    $xml->endElement();
 
-        $xml->startElement('price');
-        $xml->text($row['price']);
-        $xml->endElement();
+    // NOTE START offers
+    $xml->startElement('offers');
 
-        if (!empty($row['picture'])) {
-            $xml->startElement('picture');
-            $xml->text($row['picture']);
-            $xml->endElement();
-        }
+    foreach ([$products, $modifications] as $rows) {
+        foreach ($rows as $row) {
+            $xml->startElement('offer');
+            $xml->writeAttribute('id', $row['id']);
+            $xml->writeAttribute('available', $row['available'] ? 'true' : 'false');
 
-        if (!empty($row['url'])) {
-            $xml->startElement('url');
-            $xml->text($row['url']);
-            $xml->endElement();
-        }
-
-        if (!empty($row['options'])) {
-            foreach ($row['options'] as $k => $v) {
-                $xml->startElement('param');
-                $xml->writeAttribute('name', (string) $k);
-                $xml->text((string) $v);
+            if (!empty($row['categoryId'])) {
+                $xml->startElement('categoryId');
+                $xml->text($row['categoryId']);
                 $xml->endElement();
             }
+
+            $xml->startElement('name');
+            $xml->text($row['pagetitle']);
+            $xml->endElement();
+
+            if (!empty($row['model'])) {
+                $xml->startElement('model');
+                $xml->text($row['model']);
+                $xml->endElement();
+            }
+
+            $xml->startElement('price');
+            $xml->text($row['price']);
+            $xml->endElement();
+
+            if (!empty($row['old_price'])) {
+                $xml->startElement('oldprice');
+                $xml->text($row['old_price']);
+                $xml->endElement();
+            }
+
+            if (!empty($row['picture'])) {
+                $xml->startElement('picture');
+                $xml->text($row['picture']);
+                $xml->endElement();
+            }
+
+            if (!empty($row['url'])) {
+                $xml->startElement('url');
+                $xml->text($row['url']);
+                $xml->endElement();
+            }
+
+            if (!empty($row['options'])) {
+                foreach ($row['options'] as $key => $values) {
+                    foreach ($values as $value) {
+                        $xml->startElement('param');
+                        $xml->writeAttribute('name', (string) $key);
+                        $xml->text((string) $value);
+                        $xml->endElement();
+                    }
+                }
+            }
+
+            $xml->endElement();
         }
-
-        $xml->endElement();
     }
+
+    // NOTE END offers
+    $xml->endElement();
+
+    // NOTE END shop
+    $xml->endElement();
+    // NOTE END yml_catalog
+    $xml->endElement();
+    $xml->endDocument();
+
+    $output = $xml->outputMemory();
+} catch (\Throwable  $e) {
+    $output = '';
+    $modx->log(\modX::LOG_LEVEL_ERROR, \var_export($e->getMessage(), true));
+    $modx->log(\modX::LOG_LEVEL_ERROR, \var_export($row, true));
 }
-
-// NOTE END offers
-$xml->endElement();
-
-// NOTE END shop
-$xml->endElement();
-// NOTE END yml_catalog
-$xml->endElement();
-$xml->endDocument();
 
 if (isset($_GET['format'])) {
     \header('Content-Type: text/plain; charset=UTF-8');
-    echo $xml->outputMemory();
+    echo $output;
 
     exit;
 }
 
 \header('Content-type: text/xml');
-echo $xml->outputMemory();
+echo $output;

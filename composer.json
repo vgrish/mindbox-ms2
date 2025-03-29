@@ -39,7 +39,8 @@
     "symfony/console": "^5.4",
     "peppeocchi/php-cron-scheduler": "^4.0",
     "cuyz/valinor": "^1.13.0",
-    "guzzlehttp/guzzle": "^7.0"
+    "guzzlehttp/guzzle": "^7.0",
+    "ext-xmlwriter": "*"
   },
   "require-dev": {
     "phpstan/phpstan": "^1.10",
