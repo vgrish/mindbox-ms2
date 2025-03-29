@@ -169,7 +169,7 @@ abstract class Worker implements WorkerInterface
     public function isResourceAvailable(?\modResource $resource): bool
     {
         if (\is_a($resource, \modResource::class)) {
-            return $resource->get('published') && !$resource->get('deletedon');
+            return $resource->get('published') && !$resource->get('deletedon') && $resource->get('contentType') === 'text/html';
         }
 
         return false;
