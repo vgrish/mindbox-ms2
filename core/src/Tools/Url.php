@@ -26,6 +26,25 @@ class Url
         return self::prepareUrl($path) . self::prepareQueryParams($params);
     }
 
+    public static function parseStr(string $query): array
+    {
+        $data = \preg_replace_callback(
+            '/(?:^|(?<=&))[^=[]+/',
+            static fn ($match) => \bin2hex(\urldecode($match[0])),
+            $query,
+        );
+
+        \parse_str($data, $values);
+
+        foreach ($values as &$value) {
+            if (\is_array($value)) {
+                $value = \array_values(\array_unique($value));
+            }
+        }
+
+        return \array_combine(\array_map('hex2bin', \array_keys($values)), $values);
+    }
+
     private static function prepareUrl(array $path): string
     {
         return self::API . '/' . \implode('/', $path);
