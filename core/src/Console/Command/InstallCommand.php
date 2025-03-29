@@ -335,6 +335,30 @@ class InstallCommand extends Command
             );
         }
 
+        $snippet->set('properties', [
+            'showDeleted' => [
+                'name' => 'showDeleted',
+                'desc' => '',
+                'type' => 'combo-boolean',
+                'value' => false,
+                'lexicon' => '',
+            ],
+            'showUnpublished' => [
+                'name' => 'showUnpublished',
+                'desc' => '',
+                'type' => 'combo-boolean',
+                'value' => false,
+                'lexicon' => '',
+            ],
+            'includeContent' => [
+                'name' => 'includeContent',
+                'desc' => '',
+                'type' => 'combo-boolean',
+                'value' => false,
+                'lexicon' => '',
+            ],
+        ]);
+
         $snippet->save();
         $output->writeln(\sprintf('<info>%s snippet `%s`</info>', $snippet->get('new') ? 'Created' : 'Updated', $snippet->get('name')));
 
