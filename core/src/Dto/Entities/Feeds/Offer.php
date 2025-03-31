@@ -29,6 +29,8 @@ class Offer
         #[\Vgrish\MindBox\MS2\Dto\Casters\StringCaster()]
         public string $pagetitle,
         #[\Vgrish\MindBox\MS2\Dto\Casters\StringCaster()]
+        public ?string $vendor,
+        #[\Vgrish\MindBox\MS2\Dto\Casters\StringCaster()]
         public ?string $vendorCode,
         #[\Vgrish\MindBox\MS2\Dto\Casters\FloatCaster()]
         public null|float|int|string $price,
@@ -79,6 +81,11 @@ class Offer
          * @var null|int|string
          */
         #[\Vgrish\MindBox\MS2\Dto\Casters\HiddenValue()]
+        public null|int|string $vendorName,
+        /**
+         * @var null|int|string
+         */
+        #[\Vgrish\MindBox\MS2\Dto\Casters\HiddenValue()]
         public null|int|string $active,
     ) {
         $this->id = $this->websiteId;
@@ -100,6 +107,10 @@ class Offer
         }
 
         $this->vendorCode = $this->article;
+
+        if (!empty($this->vendorName)) {
+            $this->vendor = $this->vendorName;
+        }
 
         if (!empty($this->image)) {
             $this->picture = $this->baseUrl . '/' . \trim($this->image, '/');

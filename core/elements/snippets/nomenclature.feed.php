@@ -82,8 +82,13 @@ $format = static function (string $dtoClass, array $data) use ($app): ?array {
     return $data;
 };
 
+$showLog = 0;
+if ($modx->user->hasSessionContext('mgr')) {
+    $showLog = (int) ($scriptProperties['showLog'] ?? 0);
+}
+
 $baseUrl = $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'];
-$categories = $products = $modifications = [];
+$categories = $products = $modifications = $logs = [];
 
 // NOTE START categories
 $innerJoin = [];
@@ -109,8 +114,13 @@ $default = [
 ];
 
 // Merge all properties and run!
-$pdoFetch->setConfig($properties('categories:', $default), true);
+$props = $properties('categories:', $default);
+$pdoFetch->setConfig($props, true);
 $rows = $pdoFetch->run();
+
+if ($showLog) {
+    $logs[] = $pdoFetch->getTime();
+}
 
 if (!empty($rows) && \is_array($rows)) {
     foreach ($rows as $k => $row) {
@@ -128,7 +138,7 @@ if (!empty($rows) && \is_array($rows)) {
         $row['websiteId'] = $websiteId;
         $row['parentWebsiteId'] = $parentWebsiteId;
 
-        $categories[$row['id']] = $row;
+        $categories[$row['id']] = \array_merge($props['placeholders'] ?? [], $row);
     }
 }
 
@@ -165,8 +175,13 @@ $default = [
     'limit' => 0,
 ];
 // Merge all properties and run!
-$pdoFetch->setConfig($properties('products:', $default), true);
+$props = $properties('products:', $default);
+$pdoFetch->setConfig($props, true);
 $rows = $pdoFetch->run();
+
+if ($showLog) {
+    $logs[] = $pdoFetch->getTime();
+}
 
 // Process rows
 if (!empty($rows) && \is_array($rows)) {
@@ -206,7 +221,7 @@ if (!empty($rows) && \is_array($rows)) {
         $row['parentWebsiteId'] = $parentWebsiteId;
         $row['baseUrl'] = $baseUrl;
 
-        $products[$row['id']] = $row;
+        $products[$row['id']] = \array_merge($props['placeholders'] ?? [], $row);
     }
 }
 
@@ -240,8 +255,13 @@ if (Extensions::isExist('msOptionsPrice')) {
         'limit' => 0,
     ];
     // Merge all properties and run!
-    $pdoFetch->setConfig($properties('modifications:', $default), true);
+    $props = $properties('modifications:', $default);
+    $pdoFetch->setConfig($props, true);
     $rows = $pdoFetch->run();
+
+    if ($showLog) {
+        $logs[] = $pdoFetch->getTime();
+    }
 
     if (!empty($rows) && \is_array($rows)) {
         foreach ($rows as $k => $row) {
@@ -285,7 +305,7 @@ if (Extensions::isExist('msOptionsPrice')) {
             $row['websiteId'] = $websiteId;
             $row['parentWebsiteId'] = $app->getNomenclatureWebsiteId($row['parent']);
 
-            $modifications[$row['id']] = $row;
+            $modifications[$row['id']] = \array_merge($props['placeholders'] ?? [], $row);
         }
     }
 
@@ -366,6 +386,12 @@ try {
             $xml->text($row['pagetitle']);
             $xml->endElement();
 
+            if (!empty($row['vendor'])) {
+                $xml->startElement('vendor');
+                $xml->text($row['vendor']);
+                $xml->endElement();
+            }
+
             if (!empty($row['vendorCode'])) {
                 $xml->startElement('vendorCode');
                 $xml->text($row['vendorCode']);
@@ -421,6 +447,10 @@ try {
     $output = '';
     $modx->log(\modX::LOG_LEVEL_ERROR, \var_export($e->getMessage(), true));
     $modx->log(\modX::LOG_LEVEL_ERROR, \var_export($row, true));
+}
+
+if (!empty($logs)) {
+    $modx->log(\modX::LOG_LEVEL_ERROR, \var_export(\implode("\n", $logs), true));
 }
 
 if (isset($_GET['format'])) {
