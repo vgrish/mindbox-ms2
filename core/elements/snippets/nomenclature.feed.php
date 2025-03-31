@@ -341,9 +341,9 @@ try {
             $xml->text($row['pagetitle']);
             $xml->endElement();
 
-            if (!empty($row['model'])) {
-                $xml->startElement('model');
-                $xml->text($row['model']);
+            if (!empty($row['vendorCode'])) {
+                $xml->startElement('vendorCode');
+                $xml->text($row['vendorCode']);
                 $xml->endElement();
             }
 
@@ -371,12 +371,10 @@ try {
 
             if (!empty($row['options'])) {
                 foreach ($row['options'] as $key => $values) {
-                    foreach ($values as $value) {
-                        $xml->startElement('param');
-                        $xml->writeAttribute('name', (string) $key);
-                        $xml->text((string) $value);
-                        $xml->endElement();
-                    }
+                    $xml->startElement('param');
+                    $xml->writeAttribute('name', (string) $key);
+                    $xml->text(\implode('|', $values));
+                    $xml->endElement();
                 }
             }
 

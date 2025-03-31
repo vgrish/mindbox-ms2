@@ -29,7 +29,7 @@ class Offer
         #[\Vgrish\MindBox\MS2\Dto\Casters\StringCaster()]
         public string $pagetitle,
         #[\Vgrish\MindBox\MS2\Dto\Casters\StringCaster()]
-        public ?string $model,
+        public ?string $vendorCode,
         #[\Vgrish\MindBox\MS2\Dto\Casters\FloatCaster()]
         public null|float|int|string $price,
         #[\Vgrish\MindBox\MS2\Dto\Casters\StringCaster()]
@@ -99,7 +99,7 @@ class Offer
             $this->old_price = null;
         }
 
-        $this->model = $this->article;
+        $this->vendorCode = $this->article;
 
         if (!empty($this->image)) {
             $this->picture = $this->baseUrl . '/' . \trim($this->image, '/');
