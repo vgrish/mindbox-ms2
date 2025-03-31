@@ -83,6 +83,7 @@ $format = static function (string $dtoClass, array $data) use ($app): ?array {
 };
 
 $showLog = 0;
+
 if ($modx->user->hasSessionContext('mgr')) {
     $showLog = (int) ($scriptProperties['showLog'] ?? 0);
 }
@@ -123,6 +124,8 @@ if ($showLog) {
 }
 
 if (!empty($rows) && \is_array($rows)) {
+    $pls = $props['placeholders'] ?? [];
+
     foreach ($rows as $k => $row) {
         if (!$websiteId = $app->getNomenclatureWebsiteId($row)) {
             continue;
@@ -138,7 +141,7 @@ if (!empty($rows) && \is_array($rows)) {
         $row['websiteId'] = $websiteId;
         $row['parentWebsiteId'] = $parentWebsiteId;
 
-        $categories[$row['id']] = \array_merge($props['placeholders'] ?? [], $row);
+        $categories[$row['id']] = \array_merge($pls, $row);
     }
 }
 
@@ -185,6 +188,8 @@ if ($showLog) {
 
 // Process rows
 if (!empty($rows) && \is_array($rows)) {
+    $pls = $props['placeholders'] ?? [];
+
     /** @var msProductData $product */
     $product = $modx->newObject('msProductData');
 
@@ -221,7 +226,7 @@ if (!empty($rows) && \is_array($rows)) {
         $row['parentWebsiteId'] = $parentWebsiteId;
         $row['baseUrl'] = $baseUrl;
 
-        $products[$row['id']] = \array_merge($props['placeholders'] ?? [], $row);
+        $products[$row['id']] = \array_merge($pls, $row);
     }
 }
 
@@ -264,6 +269,8 @@ if (Extensions::isExist('msOptionsPrice')) {
     }
 
     if (!empty($rows) && \is_array($rows)) {
+        $pls = $props['placeholders'] ?? [];
+
         foreach ($rows as $k => $row) {
             $product = $products[$row['rid']] ?? [];
 
@@ -305,7 +312,7 @@ if (Extensions::isExist('msOptionsPrice')) {
             $row['websiteId'] = $websiteId;
             $row['parentWebsiteId'] = $app->getNomenclatureWebsiteId($row['parent']);
 
-            $modifications[$row['id']] = \array_merge($props['placeholders'] ?? [], $row);
+            $modifications[$row['id']] = \array_merge($pls, $row);
         }
     }
 
