@@ -12,6 +12,7 @@ use CuyZ\Valinor\Mapper\Source\Source;
 use Vgrish\MindBox\MS2\App;
 use Vgrish\MindBox\MS2\Dto\Entities\Feeds\Category;
 use Vgrish\MindBox\MS2\Dto\Entities\Feeds\Offer;
+use Vgrish\MindBox\MS2\Tools\Extensions;
 use Vgrish\MindBox\MS2\Tools\Url;
 
 /** @var modX $modx */
@@ -36,8 +37,55 @@ if ($pdoClass = $modx->loadClass($fqn, $path, false, true)) {
 
 $pdoFetch->addTime('pdoTools loaded.');
 
-$baseUrl = $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'];
+$properties = static function (string $prefix, array $defaults) use ($scriptProperties): array {
+    $data = [];
 
+    foreach ($scriptProperties as $k => $v) {
+        if (\str_starts_with($k, $prefix)) {
+            $k = \mb_substr($k, \mb_strlen($prefix));
+
+            if (!empty($v) && \is_string($v) && ('[' === $v[0] || '{' === $v[0])) {
+                $tmp = \json_decode($v, true);
+
+                if (\json_last_error() === \JSON_ERROR_NONE) {
+                    $v = $tmp;
+                }
+            }
+        }
+
+        if (isset($defaults[$k])) {
+            if (\is_array($defaults[$k]) && \is_array($v)) {
+                $v = \array_merge($defaults[$k], $v);
+            }
+        }
+
+        $data[$k] = $v;
+    }
+
+    return \array_merge($defaults, $data);
+};
+
+$format = static function (string $dtoClass, array $data) use ($app): ?array {
+    try {
+        $data = $app->getMappper()
+            ->map(
+                $dtoClass,
+                Source::array($data),
+            );
+        $data = $app->getNormalizer()->normalize($data);
+    } catch (\Throwable  $e) {
+        $app->modx->log(\modX::LOG_LEVEL_ERROR, \var_export($e->getMessage(), true));
+        $app->modx->log(\modX::LOG_LEVEL_ERROR, \var_export($data, true));
+        $data = null;
+    }
+
+    return $data;
+};
+
+$baseUrl = $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'];
+$categories = $products = $modifications = [];
+
+// NOTE START categories
 $innerJoin = [];
 $leftJoin = [];
 $select = [
@@ -45,6 +93,7 @@ $select = [
         ? $modx->getSelectColumns('modResource', 'modResource', '', ['type'], true)
         : $modx->getSelectColumns('modResource', 'modResource', '', ['type', 'content'], true),
 ];
+
 $default = [
     'class' => 'modResource',
     'where' => ['class_key:!=' => 'msProduct'],
@@ -58,11 +107,10 @@ $default = [
     'nestedChunkPrefix' => 'minishop2_',
     'limit' => 0,
 ];
-// Merge all properties and run!
-$pdoFetch->setConfig(\array_merge($default, $scriptProperties), true);
-$rows = $pdoFetch->run();
 
-$categories = [];
+// Merge all properties and run!
+$pdoFetch->setConfig($properties('categories:', $default), true);
+$rows = $pdoFetch->run();
 
 if (!empty($rows) && \is_array($rows)) {
     foreach ($rows as $k => $row) {
@@ -85,7 +133,9 @@ if (!empty($rows) && \is_array($rows)) {
 }
 
 unset($rows);
+// NOTE END categories
 
+// NOTE START products
 $innerJoin = [];
 $leftJoin = [
     'Data' => ['class' => 'msProductData'],
@@ -101,13 +151,6 @@ $select = [
     'ProductOption' => 'GROUP_CONCAT(CONCAT_WS("[]=",`ProductOption`.`key`,`ProductOption`.`value`) SEPARATOR "&") as options',
 ];
 
-// TODO
-$leftJoin['TVcount'] = [
-    'class' => 'modTemplateVarResource',
-    'on' => 'msProduct.id = TVcount.contentid AND TVcount.tmplvarid = "13"',
-];
-$select['TVcount'] = 'TVcount.value as count';
-
 $default = [
     'class' => 'msProduct',
     'where' => ['class_key' => 'msProduct'],
@@ -122,10 +165,8 @@ $default = [
     'limit' => 0,
 ];
 // Merge all properties and run!
-$pdoFetch->setConfig(\array_merge($default, $scriptProperties), true);
+$pdoFetch->setConfig($properties('products:', $default), true);
 $rows = $pdoFetch->run();
-
-$products = [];
 
 // Process rows
 if (!empty($rows) && \is_array($rows)) {
@@ -170,104 +211,88 @@ if (!empty($rows) && \is_array($rows)) {
 }
 
 unset($rows);
+// NOTE END products
 
-$innerJoin = [];
-$leftJoin = [
-    'Option' => [
-        'class' => 'msopModificationOption',
-        'on' => 'msopModification.id = Option.mid',
-    ],
-];
+// NOTE START modifications
+if (Extensions::isExist('msOptionsPrice')) {
+    $innerJoin = [];
+    $leftJoin = [
+        'Option' => ['class' => 'msopModificationOption', 'on' => 'msopModification.id = Option.mid'],
+    ];
 
-$select = [
-    'msopModification' => !empty($includeContent)
-        ? $modx->getSelectColumns('msopModification', 'msopModification') . ', `msopModification`.`name` as `pagetitle`'
-        : $modx->getSelectColumns('msopModification', 'msopModification', '', ['description'], true) . ', `msopModification`.`name` as `pagetitle`',
-    'Option' => 'GROUP_CONCAT(CONCAT_WS("[]=",`Option`.`key`,`Option`.`value`) SEPARATOR "&") as options',
-];
+    $select = [
+        'msopModification' => !empty($includeContent)
+            ? $modx->getSelectColumns('msopModification', 'msopModification') . ', `msopModification`.`name` as `pagetitle`'
+            : $modx->getSelectColumns('msopModification', 'msopModification', '', ['description'], true) . ', `msopModification`.`name` as `pagetitle`',
+        'Option' => 'GROUP_CONCAT(CONCAT_WS("[]=",`Option`.`key`,`Option`.`value`) SEPARATOR "&") as options',
+    ];
 
-$default = [
-    'class' => 'msopModification',
-    'leftJoin' => $leftJoin,
-    'innerJoin' => $innerJoin,
-    'select' => $select,
-    'sortby' => 'msopModification.id',
-    'sortdir' => 'ASC',
-    'groupby' => 'msopModification.id',
-    'return' => 'data',
-    'nestedChunkPrefix' => 'minishop2_',
-    'limit' => 0,
-];
-// Merge all properties and run!
-$pdoFetch->setConfig(\array_merge($default, $scriptProperties), true);
-$rows = $pdoFetch->run();
+    $default = [
+        'class' => 'msopModification',
+        'leftJoin' => $leftJoin,
+        'innerJoin' => $innerJoin,
+        'select' => $select,
+        'sortby' => 'msopModification.id',
+        'sortdir' => 'ASC',
+        'groupby' => 'msopModification.id',
+        'return' => 'data',
+        'nestedChunkPrefix' => 'minishop2_',
+        'limit' => 0,
+    ];
+    // Merge all properties and run!
+    $pdoFetch->setConfig($properties('modifications:', $default), true);
+    $rows = $pdoFetch->run();
 
-$modifications = [];
+    if (!empty($rows) && \is_array($rows)) {
+        foreach ($rows as $k => $row) {
+            $product = $products[$row['rid']] ?? [];
 
-if (!empty($rows) && \is_array($rows)) {
-    foreach ($rows as $k => $row) {
-        $product = $products[$row['rid']] ?? [];
+            if (!$product || !($websiteId = $app->getNomenclatureWebsiteId($product, $row))) {
+                continue;
+            }
 
-        if (!$product || !($websiteId = $app->getNomenclatureWebsiteId($product, $row))) {
-            continue;
+            $row = \array_merge($product, $row);
+
+            if (empty($row['pagetitle'])) {
+                $row['pagetitle'] = $product['pagetitle'] ?? 'id:' . $product['id'];
+            }
+
+            if (empty($row['price'])) {
+                $row['price'] = $product['price'] ?? 0;
+            }
+
+            if (empty($row['old_price'])) {
+                $row['old_price'] = $product['old_price'] ?? 0;
+            }
+
+            if (empty($row['image'])) {
+                $row['image'] = $product['image'] ?? '';
+            }
+
+            if (empty($row['article'])) {
+                $row['article'] = $product['article'] ?? '';
+            }
+
+            if (empty($row['price']) || empty($row['published']) || !empty($row['deletedon'])) {
+                $row['active'] = 0;
+            }
+
+            $row['options'] = \array_merge(
+                $product['options'] ?? [],
+                !empty($row['options']) ? Url::parseStr($row['options']) : [],
+            );
+            $row['idx'] = $pdoFetch->idx++;
+            $row['websiteId'] = $websiteId;
+            $row['parentWebsiteId'] = $app->getNomenclatureWebsiteId($row['parent']);
+
+            $modifications[$row['id']] = $row;
         }
-
-        $row = \array_merge($product, $row);
-
-        if (empty($row['pagetitle'])) {
-            $row['pagetitle'] = $product['pagetitle'] ?? 'id:' . $product['id'];
-        }
-
-        if (empty($row['price'])) {
-            $row['price'] = $product['price'] ?? 0;
-        }
-
-        if (empty($row['old_price'])) {
-            $row['old_price'] = $product['old_price'] ?? 0;
-        }
-
-        if (empty($row['image'])) {
-            $row['image'] = $product['image'] ?? '';
-        }
-
-        if (empty($row['article'])) {
-            $row['article'] = $product['article'] ?? '';
-        }
-
-        if (empty($row['price']) || empty($row['published']) || !empty($row['deletedon'])) {
-            $row['active'] = 0;
-        }
-
-        $row['options'] = \array_merge(
-            $product['options'] ?? [],
-            !empty($row['options']) ? Url::parseStr($row['options']) : [],
-        );
-        $row['idx'] = $pdoFetch->idx++;
-        $row['websiteId'] = $websiteId;
-        $row['parentWebsiteId'] = $app->getNomenclatureWebsiteId($row['parent']);
-
-        $modifications[$row['id']] = $row;
     }
+
+    unset($rows);
 }
 
-unset($rows);
-
-$format = static function (string $dtoClass, array $data) use ($app): ?array {
-    try {
-        $data = $app->getMappper()
-            ->map(
-                $dtoClass,
-                Source::array($data),
-            );
-        $data = $app->getNormalizer()->normalize($data);
-    } catch (\Throwable  $e) {
-        $app->modx->log(\modX::LOG_LEVEL_ERROR, \var_export($e->getMessage(), true));
-        $app->modx->log(\modX::LOG_LEVEL_ERROR, \var_export($data, true));
-        $data = null;
-    }
-
-    return $data;
-};
+// NOTE END modifications
 
 foreach ($categories as $id => $row) {
     if ($row = $format(Category::class, $row)) {

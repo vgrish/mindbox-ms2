@@ -165,3 +165,14 @@ if ($app = $modx->services[\Vgrish\MindBox\MS2\App::NAME] ?? null) {
 }
 
 ```
+
+## Сниппет *MindBoxMS2.Nomenclature.feed*
+Выводит фид с номенклатурой. Пример вызова
+```
+[[!MindBoxMS2.Nomenclature.feed?
+&categories:showUnpublished=`0`
+&products:leftJoin=`{ "TVcount" : {"class": "modTemplateVarResource", "on": "msProduct.id = TVcount.contentid AND TVcount.tmplvarid = '13'" } }`
+&products:select=`{ "TVcount": "TVcount.value as count" }`
+&products:showUnpublished=`0`
+]]
+```
