@@ -10,7 +10,7 @@ declare(strict_types=1);
 
 namespace Vgrish\MindBox\MS2\Dto\Entities\Feeds;
 
-class Offer
+class OfferDto
 {
     #[\CuyZ\Valinor\Mapper\Object\Constructor()]
     public function __construct(

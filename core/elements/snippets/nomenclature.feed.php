@@ -10,8 +10,8 @@ declare(strict_types=1);
 
 use CuyZ\Valinor\Mapper\Source\Source;
 use Vgrish\MindBox\MS2\App;
-use Vgrish\MindBox\MS2\Dto\Entities\Feeds\Category;
-use Vgrish\MindBox\MS2\Dto\Entities\Feeds\Offer;
+use Vgrish\MindBox\MS2\Dto\Entities\Feeds\CategoryDto;
+use Vgrish\MindBox\MS2\Dto\Entities\Feeds\OfferDto;
 use Vgrish\MindBox\MS2\Tools\BasicAuth;
 use Vgrish\MindBox\MS2\Tools\Extensions;
 use Vgrish\MindBox\MS2\Tools\Url;
@@ -34,6 +34,14 @@ if ((int) ($scriptProperties['useBasicAuth'] ?? 0)) {
         exit;
     }
 }
+
+$showLog = 0;
+
+if ($modx->user->hasSessionContext('mgr')) {
+    $showLog = (int) ($scriptProperties['showLog'] ?? 0);
+}
+
+$baseUrl = $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'];
 
 $miniShop2 = $modx->getService('miniShop2');
 $miniShop2->initialize($modx->context->get('key'));
@@ -95,13 +103,6 @@ $format = static function (string $dtoClass, array $data) use ($app): ?array {
     return $data;
 };
 
-$showLog = 0;
-
-if ($modx->user->hasSessionContext('mgr')) {
-    $showLog = (int) ($scriptProperties['showLog'] ?? 0);
-}
-
-$baseUrl = $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'];
 $categories = $products = $modifications = $logs = [];
 
 // NOTE START categories
@@ -335,7 +336,7 @@ if (Extensions::isExist('msOptionsPrice')) {
 // NOTE END modifications
 
 foreach ($categories as $id => $row) {
-    if ($row = $format(Category::class, $row)) {
+    if ($row = $format(CategoryDto::class, $row)) {
         $categories[$id] = $row;
     } else {
         unset($categories[$id]);
@@ -343,7 +344,7 @@ foreach ($categories as $id => $row) {
 }
 
 foreach ($products as $id => $row) {
-    if ($row = $format(Offer::class, $row)) {
+    if ($row = $format(OfferDto::class, $row)) {
         $products[$id] = $row;
     } else {
         unset($products[$id]);
@@ -351,7 +352,7 @@ foreach ($products as $id => $row) {
 }
 
 foreach ($modifications as $id => $row) {
-    if ($row = $format(Offer::class, $row)) {
+    if ($row = $format(OfferDto::class, $row)) {
         $modifications[$id] = $row;
     } else {
         unset($modifications[$id]);
