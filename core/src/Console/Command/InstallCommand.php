@@ -383,6 +383,80 @@ class InstallCommand extends Command
         $snippet->save();
         $output->writeln(\sprintf('<info>%s snippet `%s`</info>', $snippet->get('new') ? 'Created' : 'Updated', $snippet->get('name')));
 
+        if (!$snippet = $modx->getObject(\modSnippet::class, ['name' => App::NAME . '.customers.feed'])) {
+            $snippet = $modx->newObject(\modSnippet::class);
+            $snippet->fromArray(
+                [
+                    'name' => App::NAME . '.Customers.feed',
+                    'description' => '',
+                    'source' => 1,
+                    'static' => true,
+                    'static_file' => \str_replace(MODX_BASE_PATH, '', $corePath . '/elements/snippets/customers.feed.php'),
+                    'category' => $categoryId,
+                    'propertiers' => [],
+                    'new' => true,
+                ],
+                '',
+                true,
+                true,
+            );
+        }
+
+        $snippet->set('properties', [
+            'showInactive' => [
+                'name' => 'showInactive',
+                'desc' => '',
+                'type' => 'combo-boolean',
+                'value' => false,
+                'lexicon' => '',
+            ],
+            'showBlocked' => [
+                'name' => 'showBlocked',
+                'desc' => '',
+                'type' => 'combo-boolean',
+                'value' => false,
+                'lexicon' => '',
+            ],
+            'useBasicAuth' => [
+                'name' => 'useBasicAuth',
+                'desc' => '',
+                'type' => 'combo-boolean',
+                'value' => true,
+                'lexicon' => '',
+            ],
+            'authUsername' => [
+                'name' => 'authUsername',
+                'desc' => '',
+                'type' => 'textfield',
+                'value' => '',
+                'lexicon' => '',
+            ],
+            'authPassword' => [
+                'name' => 'authPassword',
+                'desc' => '',
+                'type' => 'textfield',
+                'value' => '',
+                'lexicon' => '',
+            ],
+            'enclosure' => [
+                'name' => 'enclosure',
+                'desc' => '',
+                'type' => 'textfield',
+                'value' => '"',
+                'lexicon' => '',
+            ],
+            'separator' => [
+                'name' => 'separator',
+                'desc' => '',
+                'type' => 'textfield',
+                'value' => ';',
+                'lexicon' => '',
+            ],
+        ]);
+
+        $snippet->save();
+        $output->writeln(\sprintf('<info>%s snippet `%s`</info>', $snippet->get('new') ? 'Created' : 'Updated', $snippet->get('name')));
+
         $modx->getCacheManager()->refresh();
         $output->writeln('<info>Cleared MODX cache</info>');
 
