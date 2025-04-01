@@ -176,3 +176,14 @@ if ($app = $modx->services[\Vgrish\MindBox\MS2\App::NAME] ?? null) {
 &products:showUnpublished=`0`
 ]]
 ```
+
+## Сниппет *MindBoxMS2.Customers.feed*
+Выводит фид с пользователями. Пример вызова
+```
+[[!MindBoxMS2.Customers.feed?
+&useBasicAuth=`1` 
+&authUsername=`user`
+&authPassword=`password`
+]]
+```
+* useBasicAuth - использовать базовую аутентификацию при выводе данных
