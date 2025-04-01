@@ -12,6 +12,7 @@ use CuyZ\Valinor\Mapper\Source\Source;
 use Vgrish\MindBox\MS2\App;
 use Vgrish\MindBox\MS2\Dto\Entities\Feeds\Category;
 use Vgrish\MindBox\MS2\Dto\Entities\Feeds\Offer;
+use Vgrish\MindBox\MS2\Tools\BasicAuth;
 use Vgrish\MindBox\MS2\Tools\Extensions;
 use Vgrish\MindBox\MS2\Tools\Url;
 
@@ -22,8 +23,20 @@ if (!$app = $modx->services[App::NAME] ?? null) {
     return;
 }
 
+if ((int) ($scriptProperties['useBasicAuth'] ?? 0)) {
+    $authUsername = \trim((string) ($scriptProperties['authUsername'] ?? ''));
+    $authPassword = \trim((string) ($scriptProperties['authPassword'] ?? ''));
+
+    if (!BasicAuth::validateAuthorization($authUsername, $authPassword)) {
+        \header('WWW-Authenticate: Basic realm="Restricted Area"');
+        \header('HTTP/1.0 401 Unauthorized');
+
+        exit;
+    }
+}
+
 $miniShop2 = $modx->getService('miniShop2');
-$miniShop2->initialize($modx->context->key);
+$miniShop2->initialize($modx->context->get('key'));
 
 /** @var pdoFetch $pdoFetch */
 $fqn = $modx->getOption('pdoFetch.class', null, 'pdotools.pdofetch', true);

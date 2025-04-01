@@ -357,6 +357,27 @@ class InstallCommand extends Command
                 'value' => false,
                 'lexicon' => '',
             ],
+            'useBasicAuth' => [
+                'name' => 'useBasicAuth',
+                'desc' => '',
+                'type' => 'combo-boolean',
+                'value' => false,
+                'lexicon' => '',
+            ],
+            'authUsername' => [
+                'name' => 'authUsername',
+                'desc' => '',
+                'type' => 'textfield',
+                'value' => '',
+                'lexicon' => '',
+            ],
+            'authPassword' => [
+                'name' => 'authPassword',
+                'desc' => '',
+                'type' => 'textfield',
+                'value' => '',
+                'lexicon' => '',
+            ],
         ]);
 
         $snippet->save();
