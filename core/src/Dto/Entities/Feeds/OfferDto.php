@@ -24,89 +24,83 @@ class OfferDto
         #[\Vgrish\MindBox\MS2\Dto\Casters\StringCaster()]
         public ?bool $available,
         /**
-         * @var non-empty-string ```<Название на сайте>```
+         * @var null|int|non-empty-string ```<Название на сайте>```
          */
         #[\Vgrish\MindBox\MS2\Dto\Casters\StringCaster()]
-        public string $pagetitle,
+        public null|int|string $name,
         #[\Vgrish\MindBox\MS2\Dto\Casters\StringCaster()]
-        public ?string $vendor,
+        public null|int|string $vendor,
         #[\Vgrish\MindBox\MS2\Dto\Casters\StringCaster()]
-        public ?string $vendorCode,
+        public null|int|string $vendorCode,
         #[\Vgrish\MindBox\MS2\Dto\Casters\FloatCaster()]
         public null|float|int|string $price,
         #[\Vgrish\MindBox\MS2\Dto\Casters\StringCaster()]
-        public null|float|int|string $old_price,
+        public null|float|int|string $oldprice,
         #[\Vgrish\MindBox\MS2\Dto\Casters\StringCaster()]
         public ?string $picture,
         #[\Vgrish\MindBox\MS2\Dto\Casters\StringCaster()]
         public ?string $url,
         #[\Vgrish\MindBox\MS2\Dto\Casters\NonEmptyObjectOrNullCaster()]
         public ?array $options,
-        /**
-         * @var int|string
-         */
         #[\Vgrish\MindBox\MS2\Dto\Casters\HiddenValue()]
         public int|string $websiteId,
-        /**
-         * @var null|int|string
-         */
+        #[\Vgrish\MindBox\MS2\Dto\Casters\HiddenValue()]
+        public null|int|string $pagetitle,
+        #[\Vgrish\MindBox\MS2\Dto\Casters\HiddenValue()]
+        public null|int|string $longtitle,
         #[\Vgrish\MindBox\MS2\Dto\Casters\HiddenValue()]
         public null|int|string $parentWebsiteId,
-        /**
-         * @var string
-         */
         #[\Vgrish\MindBox\MS2\Dto\Casters\HiddenValue()]
         public string $baseUrl,
-        /**
-         * @var null|string
-         */
         #[\Vgrish\MindBox\MS2\Dto\Casters\HiddenValue()]
         public ?string $image,
-        /**
-         * @var null|string
-         */
         #[\Vgrish\MindBox\MS2\Dto\Casters\HiddenValue()]
         public ?string $uri,
-        /**
-         * @var null|int|string
-         */
         #[\Vgrish\MindBox\MS2\Dto\Casters\HiddenValue()]
         public null|int|string $count,
-        /**
-         * @var null|int|string
-         */
         #[\Vgrish\MindBox\MS2\Dto\Casters\HiddenValue()]
         public null|int|string $article,
-        /**
-         * @var null|int|string
-         */
+        #[\Vgrish\MindBox\MS2\Dto\Casters\HiddenValue()]
+        public null|float|int|string $old_price,
         #[\Vgrish\MindBox\MS2\Dto\Casters\HiddenValue()]
         public null|int|string $vendorName,
-        /**
-         * @var null|int|string
-         */
         #[\Vgrish\MindBox\MS2\Dto\Casters\HiddenValue()]
         public null|int|string $active,
     ) {
         $this->id = $this->websiteId;
         $this->categoryId = $this->parentWebsiteId;
-        $this->available = !empty($this->count) && ('0' !== $this->count);
 
-        if (empty($this->active)) {
-            $this->available = false;
+        if (null === $this->available) {
+            $this->available = !empty($this->count) && ('0' !== $this->count);
+
+            if (empty($this->active)) {
+                $this->available = false;
+            }
         }
 
-        $this->old_price = (int) $this->old_price;
+        if (null === $this->name) {
+            $this->name = $this->pagetitle;
 
-        if ((int) $this->price > $this->old_price) {
-            $this->old_price = null;
+            if (!empty($this->longtitle)) {
+                $this->name = $this->longtitle;
+            }
         }
 
-        if (empty($this->old_price)) {
-            $this->old_price = null;
+        if (null === $this->oldprice) {
+            $this->oldprice = (int) $this->old_price;
         }
 
-        $this->vendorCode = $this->article;
+        if ((int) $this->price > $this->oldprice) {
+            $this->oldprice = null;
+        }
+
+        if (empty($this->oldprice)) {
+            $this->oldprice = null;
+        }
+
+        if (null === $this->vendorCode) {
+            $this->vendorCode = $this->article;
+        }
 
         if (!empty($this->vendorName)) {
             $this->vendor = $this->vendorName;

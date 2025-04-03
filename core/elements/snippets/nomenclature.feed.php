@@ -381,7 +381,10 @@ try {
             $xml->writeAttribute('parentId', $row['parent']);
         }
 
-        $xml->text($row['pagetitle']);
+        if (!empty($row['name'])) {
+            $xml->text($row['name']);
+        }
+
         $xml->endElement();
     }
 
@@ -397,48 +400,12 @@ try {
             $xml->writeAttribute('id', $row['id']);
             $xml->writeAttribute('available', $row['available'] ? 'true' : 'false');
 
-            if (!empty($row['categoryId'])) {
-                $xml->startElement('categoryId');
-                $xml->text($row['categoryId']);
-                $xml->endElement();
-            }
-
-            $xml->startElement('name');
-            $xml->text($row['pagetitle']);
-            $xml->endElement();
-
-            if (!empty($row['vendor'])) {
-                $xml->startElement('vendor');
-                $xml->text($row['vendor']);
-                $xml->endElement();
-            }
-
-            if (!empty($row['vendorCode'])) {
-                $xml->startElement('vendorCode');
-                $xml->text($row['vendorCode']);
-                $xml->endElement();
-            }
-
-            $xml->startElement('price');
-            $xml->text($row['price']);
-            $xml->endElement();
-
-            if (!empty($row['old_price'])) {
-                $xml->startElement('oldprice');
-                $xml->text($row['old_price']);
-                $xml->endElement();
-            }
-
-            if (!empty($row['picture'])) {
-                $xml->startElement('picture');
-                $xml->text($row['picture']);
-                $xml->endElement();
-            }
-
-            if (!empty($row['url'])) {
-                $xml->startElement('url');
-                $xml->text($row['url']);
-                $xml->endElement();
+            foreach (['categoryId', 'name', 'vendor', 'vendorCode', 'price', 'oldprice', 'picture', 'url'] as $key) {
+                if (isset($row[$key])) {
+                    $xml->startElement($key);
+                    $xml->text((string) $row[$key]);
+                    $xml->endElement();
+                }
             }
 
             if (!empty($row['options'])) {
