@@ -63,6 +63,10 @@ trait GetOrderDataTrait
             }
         }
 
+        if (!$lines) {
+            return [];
+        }
+
         return [
             'customer' => [
                 'ids' => [
@@ -79,6 +83,7 @@ trait GetOrderDataTrait
                 'deliveryCost' => $msOrder->get('delivery_cost'),
                 'customFields' => [
                     'deliveryType' => $msOrder->get('delivery'),
+                    'paymentType' => $msOrder->get('payment'),
                 ],
                 'totalPrice' => $msOrder->get('cost'),
                 'discounts' => $discounts,

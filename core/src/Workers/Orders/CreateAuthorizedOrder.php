@@ -40,7 +40,11 @@ class CreateAuthorizedOrder extends Worker
         $msOrder = $params['msOrder'] ?? null;
 
         if (\is_a($msOrder, \msOrder::class)) {
-            $data = $this->formatData(UpdateOrderDataDto::class, $this->getOrderData($msOrder));
+            if (!$data = $this->getOrderData($msOrder)) {
+                return $this->error();
+            }
+
+            $data = $this->formatData(UpdateOrderDataDto::class, $data);
 
             return $this->success($data);
         }
