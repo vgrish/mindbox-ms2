@@ -11,6 +11,7 @@ declare(strict_types=1);
 namespace Vgrish\MindBox\MS2\Workers\Nomenclature;
 
 use Vgrish\MindBox\MS2\Dto\Data\Nomenclature\ViewProductDataDto;
+use Vgrish\MindBox\MS2\Tools\Extensions;
 use Vgrish\MindBox\MS2\Worker;
 use Vgrish\MindBox\MS2\WorkerResult;
 
@@ -29,6 +30,11 @@ class ViewProduct extends Worker
         $resource = $this->modx?->resource;
 
         if (!$this->isResourceAvailable($resource)) {
+            return $this->error();
+        }
+
+        // NOTE: если установлен модуль msOptionsPrice и есть модификации, то не генерируем событие просмотра товара
+        if (Extensions::isExist('msOptionsPrice') && $this->modx->getCount(\msopModification::class, ['rid' => $resource->get('id')])) {
             return $this->error();
         }
 
