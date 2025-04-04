@@ -60,8 +60,8 @@ abstract class Worker implements WorkerInterface
 
         $this->event = $event;
 
-        self::$isDevelopmentMode = (bool) $this->modx->getOption(App::NAMESPACE . '.development_mode', null);
-        self::$botPatterns = (string) $this->modx->getOption(App::NAMESPACE . '.bot_patterns', null);
+        self::$isDevelopmentMode = (bool) (int) $this->app->getSetting('development_mode');
+        self::$botPatterns = (string) $this->app->getSetting('bot_patterns');
     }
 
     public function run(bool $debug = false): WorkerResult
