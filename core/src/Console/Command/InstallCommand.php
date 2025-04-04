@@ -213,6 +213,42 @@ class InstallCommand extends Command
             $output->writeln(\sprintf('<info>Created system setting `%s`</info>', $key));
         }
 
+        $key = App::NAMESPACE . '.nomenclature_category_templates';
+
+        if (!$modx->getObject(\modSystemSetting::class, $key)) {
+            $setting = new \modSystemSetting($modx);
+            $setting->fromArray(
+                [
+                    'key' => $key,
+                    'namespace' => App::NAME,
+                    'xtype' => 'textfield',
+                    'value' => '',
+                ],
+                false,
+                true,
+            );
+            $setting->save();
+            $output->writeln(\sprintf('<info>Created system setting `%s`</info>', $key));
+        }
+
+        $key = App::NAMESPACE . '.nomenclature_product_templates';
+
+        if (!$modx->getObject(\modSystemSetting::class, $key)) {
+            $setting = new \modSystemSetting($modx);
+            $setting->fromArray(
+                [
+                    'key' => $key,
+                    'namespace' => App::NAME,
+                    'xtype' => 'textfield',
+                    'value' => '',
+                ],
+                false,
+                true,
+            );
+            $setting->save();
+            $output->writeln(\sprintf('<info>Created system setting `%s`</info>', $key));
+        }
+
         $schemaFile = $corePath . '/schema/' . App::NAMESPACE . '.mysql.schema.xml';
 
         if (\file_get_contents($schemaFile)) {

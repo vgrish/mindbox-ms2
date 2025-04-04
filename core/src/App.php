@@ -17,6 +17,7 @@ use CuyZ\Valinor\MapperBuilder;
 use CuyZ\Valinor\Normalizer\Format;
 use CuyZ\Valinor\Normalizer\Normalizer;
 use Vgrish\MindBox\MS2\Config\Config;
+use Vgrish\MindBox\MS2\Config\SettingsConfig;
 use Vgrish\MindBox\MS2\Dto\Entities\HiddenValueDto;
 use Vgrish\MindBox\MS2\Http\ApiClient;
 use Vgrish\MindBox\MS2\Http\GuzzleSenderFactory;
@@ -36,6 +37,16 @@ class App
         public \modX $modx,
         public Config $config,
     ) {
+        $settings = \array_filter(
+            $modx->config,
+            static fn ($key) => \str_starts_with($key, self::NAMESPACE . '.'),
+            \ARRAY_FILTER_USE_KEY,
+        );
+
+        $this->config = $config->withSettings(
+            SettingsConfig::fromArray($settings),
+        );
+
         // HACK for loading models with namespace
         if (\is_dir(MODX_CORE_PATH . 'components/' . self::NAMESPACE)) {
             $models = ClassFinder::findByRegex(
@@ -85,23 +96,15 @@ class App
         );
     }
 
-    public function getOption($key, $config = [], $default = null, $skipEmpty = false)
+    public function getSetting(string $key, $default = null, bool $skipEmpty = false): null|array|int|string
     {
-        $option = $default;
+        $value = $this->config->getSettingConfig()->getSetting($key);
 
-        if (!empty($key) && \is_string($key)) {
-            if (null !== $config && \array_key_exists($key, $config)) {
-                $option = $config[$key];
-            } elseif (\array_key_exists(self::NAMESPACE . '.' . $key, $this->modx->config)) {
-                $option = $this->modx->getOption(self::NAMESPACE . '.' . $key);
-            }
+        if ($skipEmpty && empty($value)) {
+            $value = $default;
         }
 
-        if ($skipEmpty && empty($option)) {
-            $option = $default;
-        }
-
-        return $option;
+        return $value;
     }
 
     public function getApiClient(

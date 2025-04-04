@@ -32,7 +32,11 @@ class ViewCategory extends Worker
             return $this->error();
         }
 
-        if (!\is_a($resource, \msProduct::class) && ($websiteId = $this->app->getNomenclatureWebsiteId($resource))) {
+        if (!$this->isResourceCategory($resource)) {
+            return $this->error();
+        }
+
+        if ($websiteId = $this->app->getNomenclatureWebsiteId($resource)) {
             $data = [
                 'viewProductCategory' => [
                     'productCategory' => [

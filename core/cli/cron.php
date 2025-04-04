@@ -16,7 +16,7 @@ require \dirname(__DIR__) . '/bootstrap.php';
 $scheduler = new Scheduler();
 
 $scheduler->php(__DIR__ . '/send-events.php', null, [], 'send_events')
-    ->everyMinute(3)
+    ->everyMinute(1)
     ->inForeground()
     ->onlyOne();
 

@@ -13,12 +13,18 @@ namespace Vgrish\MindBox\MS2\Config;
 final class Config
 {
     public const getNomenclatureWebsiteId = 'getNomenclatureWebsiteId';
+    private SettingsConfig $settingsConfig;
     private WorkersConfig $workersConfig;
     private WebHooksConfig $webHooksConfig;
     private ExtensionsConfig $extensionsConfig;
 
     private function __construct()
     {
+    }
+
+    public function getSettingConfig(): SettingsConfig
+    {
+        return $this->settingsConfig;
     }
 
     public function getWorkersConfig(): WorkersConfig
@@ -41,9 +47,18 @@ final class Config
         $cfg = new self();
 
         return $cfg
+            ->withSettings(SettingsConfig::fromArray([]))
             ->withWorkers(WorkersConfig::fromArray([]))
             ->withWebHooks(WebHooksConfig::fromArray([]))
             ->withExtensions(ExtensionsConfig::fromArray([]));
+    }
+
+    public function withSettings(SettingsConfig $settingsConfig): self
+    {
+        $cfg = clone $this;
+        $cfg->settingsConfig = $settingsConfig;
+
+        return $cfg;
     }
 
     public function withWorkers(WorkersConfig $workersConfig): self

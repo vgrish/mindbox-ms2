@@ -175,6 +175,28 @@ abstract class Worker implements WorkerInterface
         return false;
     }
 
+    public function isResourceCategory(?\modResource $resource): bool
+    {
+        if (\is_a($resource, \modResource::class)) {
+            $templates = $this->app->getSetting('nomenclature_category_templates', [], true);
+
+            return \in_array((string) $resource->get('template'), $templates, true);
+        }
+
+        return false;
+    }
+
+    public function isResourceProduct(?\modResource $resource): bool
+    {
+        if (\is_a($resource, \modResource::class)) {
+            $templates = $this->app->getSetting('nomenclature_product_templates', [], true);
+
+            return \in_array((string) $resource->get('template'), $templates, true);
+        }
+
+        return false;
+    }
+
     protected function getContextKey(): string
     {
         $ctx = (string) $this->modx?->context->get('key');
