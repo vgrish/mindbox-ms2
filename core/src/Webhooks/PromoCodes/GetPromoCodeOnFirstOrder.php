@@ -13,9 +13,12 @@ namespace Vgrish\MindBox\MS2\Webhooks\PromoCodes;
 use Vgrish\MindBox\MS2\Tools\Extensions;
 use Vgrish\MindBox\MS2\WebHook;
 use Vgrish\MindBox\MS2\WebHookResult;
+use Vgrish\MindBox\MS2\Workers\Traits\GetCustomerByEmailTrait;
 
 class GetPromoCodeOnFirstOrder extends WebHook
 {
+    use GetCustomerByEmailTrait;
+
     /**
      * config.email - `<почта пользователя>`
      * config.discount - `<процент скидки>`
@@ -35,7 +38,7 @@ class GetPromoCodeOnFirstOrder extends WebHook
 
         $modx = $this->modx;
 
-        if (!$user = $this->app->getCustomerByEmail($email)) {
+        if (!$user = $this->getCustomerByEmail($email)) {
             return $this->error();
         }
 
