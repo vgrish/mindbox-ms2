@@ -53,7 +53,7 @@ if (!$app = $modx->services[App::NAME] ?? null) {
     exit('Service Unavailable');
 }
 
-if (!Headers::validateWebHookAuthorization((string) $modx->getOption(App::NAMESPACE . '.webhook_secret_key', null))) {
+if (!Headers::validateWebHookAuthorization((string) $app->getSettings('webhook_secret_key', null))) {
     \http_response_code(401);
 
     exit('Unauthorized');

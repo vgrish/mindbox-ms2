@@ -195,7 +195,7 @@ class InstallCommand extends Command
             $output->writeln(\sprintf('<info>Created system setting `%s`</info>', $key));
         }
 
-        $key = App::NAMESPACE . '.nomenclature_united_website_key';
+        $key = App::NAMESPACE . '.nomenclature_website_key_separator';
 
         if (!$modx->getObject(\modSystemSetting::class, $key)) {
             $setting = new \modSystemSetting($modx);
@@ -203,8 +203,8 @@ class InstallCommand extends Command
                 [
                     'key' => $key,
                     'namespace' => App::NAME,
-                    'xtype' => 'combo-boolean',
-                    'value' => true,
+                    'xtype' => 'textfield',
+                    'value' => '||',
                 ],
                 false,
                 true,

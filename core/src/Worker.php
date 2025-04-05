@@ -24,8 +24,6 @@ abstract class Worker implements WorkerInterface
     protected static string $operation;
     protected static bool $isAsyncOperation;
     protected static bool $isClientRequired;
-    protected static bool $isDevelopmentMode;
-    protected static string $botPatterns;
 
     public function __construct(
         protected App $app,
@@ -59,9 +57,6 @@ abstract class Worker implements WorkerInterface
         }
 
         $this->event = $event;
-
-        self::$isDevelopmentMode = (bool) (int) $this->app->getSetting('development_mode');
-        self::$botPatterns = (string) $this->app->getSetting('bot_patterns');
     }
 
     public function run(bool $debug = false): WorkerResult
@@ -79,7 +74,7 @@ abstract class Worker implements WorkerInterface
                 'data' => $result->data,
             ];
 
-            if (self::$isDevelopmentMode) {
+            if ($this->app->getSetting('development_mode')) {
                 $this->log($data);
             }
 
@@ -124,7 +119,9 @@ abstract class Worker implements WorkerInterface
 
     public function formatData(string $dtoClass, array $data, bool $showLog = true): array
     {
-        if ($showLog && self::$isDevelopmentMode) {
+        $isDevelopmentMode = $this->app->getSetting('development_mode');
+
+        if ($showLog && $isDevelopmentMode) {
             $this->log($data);
         }
 
@@ -135,7 +132,7 @@ abstract class Worker implements WorkerInterface
             );
         $data = $this->app->getNormalizer()->normalize($data);
 
-        if ($showLog && self::$isDevelopmentMode) {
+        if ($showLog && $isDevelopmentMode) {
             $this->log($data);
         }
 
@@ -159,11 +156,13 @@ abstract class Worker implements WorkerInterface
 
     public function isClientBot(): bool
     {
-        if (empty(self::$botPatterns)) {
+        $botPatterns = $this->app->getSetting('bot_patterns');
+
+        if (empty($botPatterns)) {
             return false;
         }
 
-        return Headers::validateUserAgentIsBot(self::$botPatterns);
+        return Headers::validateUserAgentIsBot($botPatterns);
     }
 
     public function isResourceAvailable(?\modResource $resource): bool
@@ -178,9 +177,9 @@ abstract class Worker implements WorkerInterface
     public function isResourceCategory(?\modResource $resource): bool
     {
         if (\is_a($resource, \modResource::class)) {
-            $templates = $this->app->getSetting('nomenclature_category_templates', [], true);
+            $templates = (array) $this->app->getSetting('nomenclature_category_templates', [], true);
 
-            return \in_array((string) $resource->get('template'), $templates, true);
+            return \in_array((int) $resource->get('template'), $templates, true);
         }
 
         return false;
@@ -189,9 +188,9 @@ abstract class Worker implements WorkerInterface
     public function isResourceProduct(?\modResource $resource): bool
     {
         if (\is_a($resource, \modResource::class)) {
-            $templates = $this->app->getSetting('nomenclature_product_templates', [], true);
+            $templates = (array) $this->app->getSetting('nomenclature_product_templates', [], true);
 
-            return \in_array((string) $resource->get('template'), $templates, true);
+            return \in_array((int) $resource->get('template'), $templates, true);
         }
 
         return false;

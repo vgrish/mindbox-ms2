@@ -19,7 +19,6 @@ abstract class WebHook implements WebHookInterface
     protected WebHookResult $result;
     protected static string $operation;
     protected static string $transactionId;
-    protected static bool $isDevelopmentMode;
 
     public function __construct(
         protected App $app,
@@ -33,8 +32,6 @@ abstract class WebHook implements WebHookInterface
         if (empty(static::$operation)) {
             throw new \LogicException(\sprintf('%s must have a `%s`', static::class, '$operation'));
         }
-
-        self::$isDevelopmentMode = (bool) $this->modx->getOption(App::NAMESPACE . '.development_mode', null);
     }
 
     public function run(bool $debug = false): WebHookResult
@@ -50,7 +47,7 @@ abstract class WebHook implements WebHookInterface
                 'data' => $result->data,
             ];
 
-            if (self::$isDevelopmentMode) {
+            if ($this->app->getSetting('development_mode')) {
                 $this->log($data);
             }
 
@@ -96,7 +93,9 @@ abstract class WebHook implements WebHookInterface
 
     public function formatData(string $dtoClass, array $data, bool $showLog = true): array
     {
-        if ($showLog && self::$isDevelopmentMode) {
+        $isDevelopmentMode = $this->app->getSetting('development_mode');
+
+        if ($showLog && $isDevelopmentMode) {
             $this->log($data);
         }
 
@@ -107,7 +106,7 @@ abstract class WebHook implements WebHookInterface
             );
         $data = $this->app->getNormalizer()->normalize($data);
 
-        if ($showLog && self::$isDevelopmentMode) {
+        if ($showLog && $isDevelopmentMode) {
             $this->log($data);
         }
 

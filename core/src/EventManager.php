@@ -86,15 +86,13 @@ class EventManager
 
     public static function sendEvent(App $app, Event $event): void
     {
-        $modx = $app->modx;
-
         $client = $app->getApiClient([
-            'SecretKey' => $modx->getOption(App::NAMESPACE . '.api_secret_key', null),
+            'SecretKey' => $app->getSetting('api_secret_key'),
         ]);
         $client->addParamsToHeaders(['X-Customer-IP' => $event->get('client_ip')]);
 
         $params = [
-            'endpointId' => $modx->getOption(App::NAMESPACE . '.api_endpoint_id', null),
+            'endpointId' => $app->getSetting('api_endpoint_id'),
             'operation' => $event->get('operation'),
             'deviceUUID' => $event->get('client_uuid'),
         ];
@@ -106,8 +104,8 @@ class EventManager
             body: $event->get('data'),
         );
 
-        if ((bool) $modx->getOption(App::NAMESPACE . '.development_mode', null)) {
-            $modx->log(\modX::LOG_LEVEL_ERROR, \var_export($client->debug($payload), true));
+        if ($app->getSetting('development_mode')) {
+            $app->modx->log(\modX::LOG_LEVEL_ERROR, \var_export($client->debug($payload), true));
         }
 
         try {
@@ -120,7 +118,7 @@ class EventManager
             $data = $app->getNormalizer()->normalize($data);
         } catch (\Throwable  $e) {
             $data = ['errorMessage' => $e->getMessage()];
-            $modx->log(\modX::LOG_LEVEL_ERROR, \var_export($e->getMessage(), true));
+            $app->modx->log(\modX::LOG_LEVEL_ERROR, \var_export($e->getMessage(), true));
         }
 
         if ($data['success'] ?? false) {

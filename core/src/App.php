@@ -96,7 +96,7 @@ class App
         );
     }
 
-    public function getSetting(string $key, $default = null, bool $skipEmpty = false): null|array|int|string
+    public function getSetting(string $key, $default = null, bool $skipEmpty = false): null|array|bool|float|int|string
     {
         $value = $this->config->getSettingConfig()->getSetting($key);
 
@@ -125,7 +125,7 @@ class App
         if (null === $mapper) {
             $cache = new FileSystemCache(MODX_CORE_PATH . 'cache/valinor');
 
-            if ((bool) $this->modx->getOption(self::NAMESPACE . '.development_mode', null)) {
+            if ($this->getSetting('development_mode')) {
                 $cache = new FileWatchingCache($cache);
             }
 
@@ -226,6 +226,6 @@ class App
             $getter = [Extensions::class, Config::getNomenclatureWebsiteId];
         }
 
-        return $getter($this->modx, $resource, $modification);
+        return $getter($this, $resource, $modification);
     }
 }

@@ -24,9 +24,10 @@ class SettingsConfig
         foreach ($settings as $key => $value) {
             $key = \str_replace(App::NAMESPACE . '.', '', $key);
             $value = match ($key) {
-                'nomenclature_category_templates',
-                'nomenclature_product_templates' => \array_filter(
-                    \array_map('trim', \explode(',', $value)),
+                'development_mode' => (bool) (int) $value,
+                'bot_patterns','nomenclature_website_key', 'nomenclature_modification_website_key' ,'nomenclature_website_key_separator' => \trim((string) $value),
+                'nomenclature_category_templates', 'nomenclature_product_templates' => \array_filter(
+                    \array_map('intval', \explode(',', $value)),
                 ),
                 default => $value,
             };
@@ -50,7 +51,7 @@ class SettingsConfig
         return $this->settings;
     }
 
-    public function getSetting(string $key): null|array|int|string
+    public function getSetting(string $key): null|array|bool|float|int|string
     {
         return $this->settings[$key] ?? null;
     }
