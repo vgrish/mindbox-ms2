@@ -21,35 +21,32 @@ class Extensions
         return \file_exists(\sprintf('%s/components/%s/model/%s/', \rtrim(MODX_CORE_PATH, '/'), $service, $service));
     }
 
-    public static function getNomenclatureWebsiteId(\modX $modx, null|array|int|\modResource|string $resource = null, null|array|\msopModification $modification = null): null|int|string
+    public static function getNomenclatureWebsiteId(App $app, null|array|int|\modResource|string $resource = null, null|array|\msopModification $modification = null): null|int|string
     {
         static $resourceWebsiteKey = null;
         static $modWebsiteKey = null;
-        static $unitedWebsiteKey = null;
+        static $websiteKeySeparator = null;
         static $isModification = null;
         static $resourceCache = [];
         static $modCache = [];
 
         if (null === $resourceWebsiteKey) {
-            $resourceWebsiteKey = \trim(
-                (string) $modx->getOption(App::NAMESPACE . '.nomenclature_website_key', null, 'id', true),
-            );
+            $resourceWebsiteKey = (string) $app->getSetting('nomenclature_website_key', 'id', true);
         }
 
         if (null === $modWebsiteKey) {
-            $modWebsiteKey = \trim(
-                (string) $modx->getOption(App::NAMESPACE . '.nomenclature_modification_website_key', null),
-            );
+            $modWebsiteKey = (string) $app->getSetting('nomenclature_modification_website_key');
         }
 
-        if (null === $unitedWebsiteKey) {
-            $unitedWebsiteKey = (bool) (int) $modx->getOption(App::NAMESPACE . '.nomenclature_united_website_key', null);
+        if (null === $websiteKeySeparator) {
+            $websiteKeySeparator = (string) $app->getSetting('nomenclature_website_key_separator');
         }
 
         if (null === $isModification) {
             $isModification = self::isExist('msOptionsPrice');
         }
 
+        $modx = $app->modx;
         $resourceWebsiteId = $modWebsiteId = null;
 
         $id = null;
@@ -122,7 +119,7 @@ class Extensions
 
         $websiteId = [];
 
-        if ($unitedWebsiteKey) {
+        if (!empty($websiteKeySeparator)) {
             if (!empty($resourceWebsiteId)) {
                 $websiteId[] = $resourceWebsiteId;
             }
@@ -130,16 +127,18 @@ class Extensions
             if (!empty($modWebsiteId)) {
                 $websiteId[] = $modWebsiteId;
             }
+
+            $websiteId = \implode($websiteKeySeparator, $websiteId);
         } else {
             if (!empty($resourceWebsiteId)) {
-                $websiteId = [$resourceWebsiteId];
+                $websiteId = $resourceWebsiteId;
             }
 
             if (!empty($modWebsiteId)) {
-                $websiteId = [$modWebsiteId];
+                $websiteId = $modWebsiteId;
             }
         }
 
-        return empty($websiteId) ? null : \implode('||', $websiteId);
+        return !empty($websiteId) ? $websiteId : null;
     }
 }
