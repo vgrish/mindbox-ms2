@@ -21,10 +21,17 @@ composer remove vgrish/mindbox-ms2
 
 ### Настройки
 
+* `development_mode` - Режим разработки. Включает вывод данных в журнал MODx, а так же включает отслеживание изменений DTO сущностей в реальном времени.
 * `api_endpoint_id` - Идентификатор точки интеграции api
 * `api_secret_key` - Секретный ключ api
 * `webhook_secret_key` - Секретный ключ webhook
-* `development_mode` - Режим разработки. Включает вывод данных в журнал MODx, а так же включает отслеживание изменений DTO сущностей в реальном времени.
+* `bot_patterns` - Регистронезависимый список User-Agent ботов, разделитель "|". По умолчанию - "Yandex|Google|Yahoo|Rambler|Mail|Bot|Spider|Snoopy|Crawler|Finder|curl|Wget|Go-http-client|Postman"
+* `nomenclature_website_key` - Ключ номенклатуры ресурсов
+* `nomenclature_modification_website_key` - Ключ номенклатуры модификаций
+* `nomenclature_website_key_separator` - Разделитель ключей номенклатуры. По умолчанию - "||"
+* `nomenclature_category_templates` - Список шаблонов категорий номенклатуры
+* `nomenclature_product_templates` - Список шаблонов продуктов номенклатуры
+
 
 ## Конфиг
 Файл с указанием событий MODx и обработчиков. Расположен в папке пакета 
