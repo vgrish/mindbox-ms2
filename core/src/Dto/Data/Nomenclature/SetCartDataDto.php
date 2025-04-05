@@ -22,4 +22,7 @@ class SetCartDataDto
 
     #[\Vgrish\MindBox\MS2\Dto\Casters\NonEmptyObjectOrNullCaster()]
     public CustomerCartDto $customer;
+
+    #[\Vgrish\MindBox\MS2\Dto\Casters\ExecutionDateTimeUtcCaster()]
+    public ?string $executionDateTimeUtc;
 }

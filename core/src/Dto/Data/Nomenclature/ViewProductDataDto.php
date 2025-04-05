@@ -15,4 +15,7 @@ use Vgrish\MindBox\MS2\Dto\Entities\ProductDto;
 class ViewProductDataDto
 {
     public ProductDto $viewProduct;
+
+    #[\Vgrish\MindBox\MS2\Dto\Casters\ExecutionDateTimeUtcCaster()]
+    public ?string $executionDateTimeUtc;
 }

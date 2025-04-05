@@ -18,4 +18,7 @@ class AddToWishListDto
      * @var ProductWishListDto ```<Продукты избранного>```
      */
     public ProductWishListDto $addProductToList;
+
+    #[\Vgrish\MindBox\MS2\Dto\Casters\ExecutionDateTimeUtcCaster()]
+    public ?string $executionDateTimeUtc;
 }

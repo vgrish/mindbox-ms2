@@ -16,4 +16,7 @@ class UpdateOrderStatusDataDto
 {
     public ?string $orderLinesStatus;
     public OrderDto $order;
+
+    #[\Vgrish\MindBox\MS2\Dto\Casters\ExecutionDateTimeUtcCaster()]
+    public ?string $executionDateTimeUtc;
 }

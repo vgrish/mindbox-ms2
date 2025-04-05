@@ -18,4 +18,7 @@ class RemoveFromWishListDto
      * @var ProductWishListDto ```<Продукты избранного>```
      */
     public ProductWishListDto $removeProductFromList;
+
+    #[\Vgrish\MindBox\MS2\Dto\Casters\ExecutionDateTimeUtcCaster()]
+    public ?string $executionDateTimeUtc;
 }

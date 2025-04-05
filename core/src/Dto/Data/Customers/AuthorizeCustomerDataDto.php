@@ -15,4 +15,7 @@ use Vgrish\MindBox\MS2\Dto\Entities\CustomerDto;
 class AuthorizeCustomerDataDto
 {
     public CustomerDto $customer;
+
+    #[\Vgrish\MindBox\MS2\Dto\Casters\ExecutionDateTimeUtcCaster()]
+    public ?string $executionDateTimeUtc;
 }

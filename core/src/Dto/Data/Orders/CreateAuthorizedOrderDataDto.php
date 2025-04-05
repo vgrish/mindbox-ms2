@@ -17,4 +17,7 @@ class CreateAuthorizedOrderDataDto
 {
     public CustomerDto $customer;
     public OrderDto $order;
+
+    #[\Vgrish\MindBox\MS2\Dto\Casters\ExecutionDateTimeUtcCaster()]
+    public ?string $executionDateTimeUtc;
 }
