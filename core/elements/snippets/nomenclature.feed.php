@@ -116,7 +116,7 @@ $select = [
 
 $default = [
     'class' => 'modResource',
-    'where' => ['template:IN' => $app->getSetting('nomenclature_category_templates', ['-'], true)],
+    'where' => ['template:IN' => (array) $app->getSetting('nomenclature_category_templates', ['-'], true)],
     'leftJoin' => $leftJoin,
     'innerJoin' => $innerJoin,
     'select' => $select,
@@ -180,7 +180,7 @@ $select = [
 
 $default = [
     'class' => 'msProduct',
-    'where' => ['class_key' => 'msProduct', 'template:IN' => $app->getSetting('nomenclature_product_templates', ['-'], true)],
+    'where' => ['class_key' => 'msProduct', 'template:IN' => (array) $app->getSetting('nomenclature_product_templates', ['-'], true)],
     'leftJoin' => $leftJoin,
     'innerJoin' => $innerJoin,
     'select' => $select,
