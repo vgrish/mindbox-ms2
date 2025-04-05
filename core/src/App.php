@@ -30,7 +30,7 @@ class App
     public const AUTHOR = 'vgrish';
     public const NAME = 'MindBoxMS2';
     public const NAMESPACE = 'mindbox-ms2';
-    public const VERSION = '1.0.6';
+    public const VERSION = '1.0.7';
     protected ?ApiClient $apiClient = null;
 
     public function __construct(
