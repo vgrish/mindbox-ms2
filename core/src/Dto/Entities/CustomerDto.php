@@ -55,6 +55,10 @@ class CustomerDto
          */
         public CustomerIdDto $ids,
         /**
+         * @var null|array ```<Подписка клиента>```
+         */
+        public ?array $subscriptions,
+        /**
          * @var null|string
          */
         #[\Vgrish\MindBox\MS2\Dto\Casters\HiddenValue()]
@@ -75,6 +79,10 @@ class CustomerDto
 
         if (!empty($this->lastName) || !empty($this->firstName) || !empty($this->middleName)) {
             $this->fullName = null;
+        }
+
+        if (empty($this->subscriptions)) {
+            $this->subscriptions = [new CustomerSubscription(pointOfContact: CustomerSubscription::POINT_OF_CONTACT_EMAIL)];
         }
     }
 }
