@@ -10,8 +10,14 @@ declare(strict_types=1);
 
 namespace Vgrish\MindBox\MS2\Dto\Entities;
 
-class ProductWishListDto
+class ProductListDto
 {
+    /**
+     * @var null|int|string ```<Количество продуктов>```
+     */
+    #[\Vgrish\MindBox\MS2\Dto\Casters\StringCaster()]
+    public null|int|string $count;
+
     /**
      * @var null|float|string ```<Цена за единицу>```
      */

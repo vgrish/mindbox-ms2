@@ -10,14 +10,14 @@ declare(strict_types=1);
 
 namespace Vgrish\MindBox\MS2\Dto\Data\Nomenclature;
 
-use Vgrish\MindBox\MS2\Dto\Entities\ProductWishListDto;
+use Vgrish\MindBox\MS2\Dto\Entities\ProductListDto;
 
 class RemoveFromWishListDto
 {
     /**
-     * @var ProductWishListDto ```<Продукты избранного>```
+     * @var ProductListDto ```<Продукты избранного>```
      */
-    public ProductWishListDto $removeProductFromList;
+    public ProductListDto $removeProductFromList;
 
     #[\Vgrish\MindBox\MS2\Dto\Casters\ExecutionDateTimeUtcCaster()]
     public ?string $executionDateTimeUtc;
